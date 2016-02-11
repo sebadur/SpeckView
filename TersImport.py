@@ -1,5 +1,5 @@
 import gwy
-import sys
+import zipfile
 
 plugin_type = "FILE"
 plugin_desc = "Importing Ters-Files (.ters)"
@@ -13,8 +13,15 @@ def detect_by_name(filename):
 def detect_by_content(filename, head, tail, filesize):
     return 100
 
-def load(filename, mode=None):
 
+
+def load(filename, mode=None):
+    if not (zipfile.is_zipfile(filename)):
+        return
+    with zipfile.Zipfile(filename) as zp:
+        filenames = zp.namelist()
+        print filenames
+        
     c = gwy.Container()
     d = gwy.DataField(100, 100, 100, 100, 1)
     for i in range(100):
