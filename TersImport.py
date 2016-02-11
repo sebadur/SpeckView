@@ -18,7 +18,7 @@ def detect_by_content(filename, head, tail, filesize):
 def load(filename, mode=None):
     if not (zipfile.is_zipfile(filename)):
         return
-    with ZipFile(filename, "r") as zp:
+    with zipfile.ZipFile(filename, "r") as zp:
         filenames = zp.namelist()
         print filenames
     
