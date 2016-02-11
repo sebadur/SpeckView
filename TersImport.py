@@ -8,10 +8,10 @@ def detect_by_name(filename):
     if (filename.endswith(".ters")):
         return 100
     else:
-        return 0
+        return 100
 
-#def detect_by_content(filename, head, tail, filesize):
-#    return 100
+def detect_by_content(filename, head, tail, filesize):
+    return 100
 
 
 
