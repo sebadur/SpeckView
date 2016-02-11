@@ -1,5 +1,6 @@
 import gwy
 import zipfile
+import numpy as np
 
 plugin_type = "FILE"
 plugin_desc = "Importing Ters-Files (.ters)"
@@ -20,7 +21,7 @@ def load(filename, mode=None):
         return
     with zipfile.ZipFile(filename, "r") as zp:
         filenames = zp.namelist()
-        print filenames
+        
     
         
     c = gwy.Container()
