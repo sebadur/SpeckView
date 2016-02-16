@@ -1,9 +1,11 @@
-import gwy
 import zipfile
 import numpy as np
 
+import gwy
 plugin_type = "FILE"
 plugin_desc = "Importing Ters-Files (.ters)"
+plugin_menu = ""
+
 
 def detect_by_name(filename):
     if (filename.endswith(".ters")):
@@ -11,9 +13,9 @@ def detect_by_name(filename):
     else:
         return 0
 
+
 def detect_by_content(filename, head, tail, filesize):
     return 100
-
 
 
 def load(filename, mode=None):
@@ -21,9 +23,7 @@ def load(filename, mode=None):
         return
     with zipfile.ZipFile(filename, "r") as zp:
         filenames = zp.namelist()
-        
-    
-        
+
     c = gwy.Container()
     d = gwy.DataField(100, 100, 100, 100, 1)
     for i in range(100):
@@ -31,6 +31,7 @@ def load(filename, mode=None):
             d.set_val(i, j, i) # draws linear gradient
     c.set_object_by_name("/0/data", d)
     return c
+
 
 def save(data, filename, mode=None):
     f = open(filename, "w")
