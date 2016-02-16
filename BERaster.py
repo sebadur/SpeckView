@@ -63,26 +63,21 @@ def load(dateiname, modus=None):
     c.set_object_by_name('/0/data', d)
 
     if modus == gwy.RUN_INTERACTIVE:
-        gui_laden(dateiname)
+        # PLUGIN AUSFÜHREN:
+        import gtk
+        import sys
+        sys.path.append('.gwyddion/pygwy/')
+        from SpeckView.Plotter import Plotter
+
+        ui = gtk.Window(gtk.WINDOW_TOPLEVEL)
+        ui.set_default_size(500, 500)
+        widget = gtk.VBox()
+        widget.set_size_request(400, 400)
+        ui.add(widget)
+        plotter = Plotter("x", "y")
+        plotter.plot(range(100), range(100))
+        widget.pack_start(plotter)
+        ui.show_all()
+        gtk.main()
+
     return c
-
-
-def gui_laden(dateiname):
-    """
-    :type dateiname: str
-    """
-    import gtk
-    import sys
-    sys.path.append('.gwyddion/pygwy/')
-    from SpeckView.Plotter import Plotter
-
-    ui = gtk.Window(gtk.WINDOW_TOPLEVEL)
-    widget = gtk.VBox()
-    widget.set_size_request(400, 400)
-    ui.add(widget)
-    sb = gtk.Statusbar()
-    sb.show()
-    widget.add(sb)
-    widget.add(Plotter(sb, "x", "y"))
-    widget.show()
-    ui.show()

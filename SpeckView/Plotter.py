@@ -4,37 +4,29 @@
 """
 
 import gtk
-from matplotlib.backends.backend_gtk import FigureCanvasGTK as FigureCanvas
+from matplotlib.backends.backend_gtkagg import FigureCanvasGTKAgg as FigureCanvas
+from matplotlib.backends.backend_gtkagg import NavigationToolbar2GTKAgg as NavigationToolbar
 from matplotlib.figure import Figure
 
 
-class Plotter(FigureCanvas):
-    def __init__(self, statusbar, xlabel, ylabel, width=500, height=500, dpi=75):
+class Plotter(gtk.VBox):
+    def __init__(self, xlabel, ylabel, width=500, height=500, dpi=75):
         """
-        :type statusbar: gtk.Statusbar
         :type xlabel: str
         :type ylabel: str
         :type width: int
         :type height: int
         :type dpi: int
         """
-        self.figure = Figure(figsize=(width, height), dpi=dpi)
-        self.axes = self.figure.add_subplot(111, xlabel=xlabel, ylabel=ylabel)
+        gtk.VBox.__init__(self)
+        figure = Figure(figsize=(width, height), dpi=dpi)
+        self.axes = figure.add_subplot(111, xlabel=xlabel, ylabel=ylabel)
         """ :type: matplotlib.axes.Axes """
         self.axes.hold(False)
-        FigureCanvas.__init__(self, self.figure)
-        self.statusbar = statusbar
-        self.mpl_connect('motion_notify_event', self.maus_bewegt)
-
-    def maus_bewegt(self, event):
-        """
-        :type event: matplotlib.backend_bases.MouseEvent
-        """
-        if event.inaxes is not None:
-            self.statusbar.pop(0)
-            self.statusbar.push(0, str(event.xdata) + "|" + str(event.ydata))
-        else:
-            self.statusbar.pop(0)
+        canvas = FigureCanvas(figure)
+        nav = NavigationToolbar(canvas, self)
+        self.pack_start(nav, False, False)
+        self.pack_start(canvas)
 
     def plot(self, x, y):
         """
@@ -42,4 +34,3 @@ class Plotter(FigureCanvas):
         :type x: list
         """
         self.axes.plot(x, y, antialiased=True)
-        self.draw()
