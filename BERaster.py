@@ -11,6 +11,7 @@ plugin_desc = "Bandanregungsspektrum (.ini)"
 plugin_menu = ""
 
 
+DEBUG = False
 konfig = 'konfig'
 
 
@@ -64,20 +65,14 @@ def load(dateiname, modus=None):
 
     if modus == gwy.RUN_INTERACTIVE:
         # PLUGIN AUSFÜHREN:
-        import gtk
         import sys
-        sys.path.append('.gwyddion/pygwy/')
-        from SpeckView.Plotter import Plotter
-
-        ui = gtk.Window(gtk.WINDOW_TOPLEVEL)
-        ui.set_default_size(500, 500)
-        widget = gtk.VBox()
-        widget.set_size_request(400, 400)
-        ui.add(widget)
-        plotter = Plotter("x", "y")
-        plotter.plot(range(100), range(100))
-        widget.pack_start(plotter)
-        ui.show_all()
-        gtk.main()
+        from os import path
+        if not DEBUG:
+            sys.path.append('.gwyddion/pygwy/')
+            from SpeckView.BE.Laden import Laden
+            Laden('.gwyddion/pygwy/SpeckView/ui.glade', path.dirname(dateiname), parser, d)
+        else:
+            from SpeckView.BE.Laden import Laden
+            Laden('SpeckView/ui.glade', path.dirname(dateiname), parser, d)
 
     return c
