@@ -6,9 +6,11 @@
 import gtk
 import numpy
 from scipy.signal import savgol_filter
+from ctypes import c_float
+from multiprocessing.sharedctypes import synchronized
 
 from SpeckView.Plotter import Plotter
-from SpeckView.BE.Fit import Fit
+from SpeckView.BE import Fit
 from SpeckView.BE.FitFunktion import *
 from SpeckView.BE.Konfiguration import Konfiguration
 from SpeckView.BE.Parameter import Parameter, Fitparameter
@@ -30,7 +32,13 @@ class Laden(gtk.Builder):
         self.connect_signals({
             'be_ende': gtk.main_quit,
             'be_fit_starten': self.fit_starten
+            # TODO 'abbrechen'
         })
+
+        self.ff = self.get_object('fenster_fortschritt')
+        """ :type: gtk.Window """
+        self.fortschritt = self.get_object('fortschritt')
+        """ :type: gtk.ProgressBar """
 
         self.ui = self.get_object('be_laden')
         """ :type: gtk.Window """
@@ -62,6 +70,8 @@ class Laden(gtk.Builder):
         return self.get_object(name)
 
     def fit_starten(self, knopf):
+        self.ff.show_all()
+
         fmin = self.fmin.get_value()
         fmax = self.fmax.get_value()
         df = self.df.get_value()
@@ -107,13 +117,17 @@ class Laden(gtk.Builder):
         tdms = TDMS(par)
         amplitude = tdms.messwerte_lesen(self.konf.amp)
         phase = tdms.messwerte_lesen(self.konf.phase)
+        if not phase:
+            phase = amplitude  # TODO: Wenn keine Phase vorhanden ist
 
-        fitter = Fit(par)
-        amp, ph = fitter.fit(amplitude, phase, frequenz)
+        Fit.par = par
+        Fit.amplitude_komplett = amplitude
+        Fit.phase_komplett = phase
+        Fit.frequenz = Fit.bereich(frequenz)
+        c_feld = c_float * self.pixel ** 2
 
-        for x in range(self.pixel):
-            for y in range(self.pixel):
-                self.datenfeld.set_val(x, y, amp[x + y * self.pixel])
+        Fit.erg_amp = synchronized(c_feld.from_address(self.datenfeld.get_data_pointer()))
+        Fit.fit()
 
         self.ui.destroy()
         gtk.main_quit()
