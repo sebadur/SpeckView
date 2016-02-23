@@ -52,7 +52,7 @@ class Parameter:
 
         self.fmin = fmin + bereich_links * df
         """ Anfangsfrequenz des Spektrums der Bandanregung im gewählten Frequenzbereich in Hz """
-        self.fmax = fmax + bereich_rechts * df
+        self.fmax = fmax - bereich_rechts * df
         """ Endfrequenz des Spektrums der Bandanregung im gewählten Frequenzbereich in Hz """
         self.pixel = pixel
         """ Pixelgröße des (quadratischen) Messbereichs """
@@ -68,7 +68,7 @@ class Parameter:
         """ Die Phase wird diese Anzahl an Messpunkten neben der Resonanzfrequenz der Phasenauswertung entnommen """
         self.bereich_links = bereich_links
         """ Linker Rand für Fitbereich """
-        self.bereich_rechts = bereich_rechts
+        self.bereich_rechts = -(bereich_rechts + 1)
         """ Rechter Rand des Fitbereichs """
 
         self.konf = konf

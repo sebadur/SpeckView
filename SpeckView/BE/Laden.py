@@ -7,14 +7,15 @@ import gtk
 import numpy
 from scipy.signal import savgol_filter
 from ctypes import c_float
-from multiprocessing.sharedctypes import synchronized
 
 from SpeckView.Plotter import Plotter
-from SpeckView.BE import Fit
-from SpeckView.BE.FitFunktion import *
-from SpeckView.BE.Konfiguration import Konfiguration
-from SpeckView.BE.Parameter import Parameter, Fitparameter
-from SpeckView.BE.TDMS import TDMS
+
+import BERaster
+from Fit import Fit
+from TDMS import TDMS
+from FitFunktion import *
+from Konfiguration import Konfiguration
+from Parameter import Parameter, Fitparameter
 
 
 class Laden(gtk.Builder):
@@ -31,8 +32,8 @@ class Laden(gtk.Builder):
         self.add_from_file(glade)
         self.connect_signals({
             'be_ende': gtk.main_quit,
-            'be_fit_starten': self.fit_starten
-            # TODO 'abbrechen'
+            'be_fit_starten': self.fit_starten,
+            'abbrechen': lambda *args: Fit.stopp()
         })
 
         self.ff = self.get_object('fenster_fortschritt')
@@ -70,16 +71,16 @@ class Laden(gtk.Builder):
         return self.get_object(name)
 
     def fit_starten(self, knopf):
-        self.ff.show_all()
-
         fmin = self.fmin.get_value()
         fmax = self.fmax.get_value()
         df = self.df.get_value()
         frequenz = numpy.arange(fmin, fmax, df)
 
         bereich_links = 0
-        bereich_rechts = -1
+        bereich_rechts = 0
 
+        # self.spinbox('be_savgol_koeff').get_value()
+        # self.spinbox('be_savgol_ordnung').get_value()
         par = Parameter(
             fmin=fmin,
             fmax=fmax,
@@ -88,11 +89,7 @@ class Laden(gtk.Builder):
             mittelungen=int(self.mittelungen.get_value()),
             amp_fitfkt=resonance_lorentz,  # TODO
             ph_fitfkt=phase_phenom,  # TODO
-            filter_fkt=lambda verlauf: savgol_filter(  # TODO
-                verlauf,
-                self.spinbox('be_savgol_koeff').get_value(),
-                self.spinbox('be_savgol_ordnung').get_value()
-            ),
+            filter_fkt=lambda verlauf: savgol_filter(verlauf, 15, 3),  # TODO
             phase_versatz=50,  # TODO und eigene Fitparameter für Phase!
             bereich_links=bereich_links,
             bereich_rechts=bereich_rechts,
@@ -114,20 +111,37 @@ class Laden(gtk.Builder):
             pfad=self.pfad
         )
 
+        # Fortschrittsanzeige:
+        self.ui.hide_all()
+        self.ff.show_all()
+        self.fortschritt.set_value(0)
+        self.fortschritt.set_pulse_step(1 / self.pixel)
+        while gtk.events_pending():
+            gtk.main_iteration_do(True)
+
+        # Messwerte einlesen:
         tdms = TDMS(par)
         amplitude = tdms.messwerte_lesen(self.konf.amp)
         phase = tdms.messwerte_lesen(self.konf.phase)
-        if not phase:
+        if phase is None:
             phase = amplitude  # TODO: Wenn keine Phase vorhanden ist
 
-        Fit.par = par
-        Fit.amplitude_komplett = amplitude
-        Fit.phase_komplett = phase
-        Fit.frequenz = Fit.bereich(frequenz)
+        # Gwyddion-Datenfeld:
         c_feld = c_float * self.pixel ** 2
+        daten = c_feld.from_address(self.datenfeld.get_data_pointer())
 
-        Fit.erg_amp = synchronized(c_feld.from_address(self.datenfeld.get_data_pointer()))
-        Fit.fit()
+        # Fitten:
+        fit = Fit(par, amplitude, phase, frequenz, self.fortschritt.pulse)
+        daten[:] = fit.start()
 
-        self.ui.destroy()
+        if BERaster.DEBUG:
+            from matplotlib import pyplot
+            pyplot.matshow(numpy.array(daten[:]).reshape((self.pixel, self.pixel)))
+            pyplot.show()
+
+        """for x in range(self.pixel):
+            for y in range(self.pixel):
+                self.datenfeld.set_val(x, y, erg_amp[x + y * self.pixel])"""
+
+        self.ff.hide_all()
         gtk.main_quit()

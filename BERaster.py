@@ -3,7 +3,7 @@
 @author: Sebastian Badur
 """
 
-from ConfigParser import ConfigParser, NoOptionError
+from ConfigParser import ConfigParser, Error
 
 import gwy
 plugin_type = 'FILE'
@@ -20,7 +20,7 @@ def detect_by_name(dateiname):
     :type dateiname: str
     :rtype: int
     """
-    if dateiname.endswith('.ini'):
+    if dateiname.endswith('.ber'):
         return 100
     else:
         return 0
@@ -34,10 +34,14 @@ def detect_by_content(dateiname, kopf, s, g):
     :type g: int
     :rtype: int
     """
-    if kopf.startswith('['+konfig+']'):
-        return 100
-    else:
-        return 0
+    try:
+        parser = ConfigParser()
+        parser.read(dateiname)
+        if parser.get(konfig, 'format') == 'BE Raster':
+            return 100
+    except Error:
+        pass
+    return 0
 
 
 def load(dateiname, modus=None):
@@ -46,19 +50,12 @@ def load(dateiname, modus=None):
     :param modus: Gwyddion-Ausführungsmodus (Vorschau / Interaktiv)
     :rtype: gwy.Container
     """
+
     parser = ConfigParser()
     parser.read(dateiname)
-
-    try:
-        d = gwy.DataField(
-            parser.getint(konfig, 'x_anz'),
-            parser.getint(konfig, 'y_anz'),
-            parser.getfloat(konfig, 'x_dim'),
-            parser.getfloat(konfig, 'y_dim'),
-            False
-        )
-    except NoOptionError:
-        return None
+    pixel = parser.getint(konfig, 'pixel')
+    dim = parser.getfloat(konfig, 'dim')
+    d = gwy.DataField(pixel, pixel, dim, dim, False)
 
     c = gwy.Container()
     c.set_object_by_name('/0/data', d)
@@ -69,10 +66,10 @@ def load(dateiname, modus=None):
         from os import path
         if not DEBUG:
             sys.path.append('.gwyddion/pygwy/')
-            from SpeckView.BE.Laden import Laden
-            Laden('.gwyddion/pygwy/SpeckView/ui.glade', path.dirname(dateiname), parser, d)
+            ui = '.gwyddion/pygwy/SpeckView/ui.glade'
         else:
-            from SpeckView.BE.Laden import Laden
-            Laden('SpeckView/ui.glade', path.dirname(dateiname), parser, d)
+            ui = 'SpeckView/ui.glade'
+        from SpeckView.BE.Laden import Laden
+        Laden(ui, path.dirname(dateiname), parser, d)
 
     return c

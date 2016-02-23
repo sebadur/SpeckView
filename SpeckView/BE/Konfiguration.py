@@ -11,7 +11,7 @@ class Konfiguration:
         self.mittelungen = 'mittelungen'
         self.fmin = 'fmin'
         self.fmax = 'fmax'
-        self.gruppe = 'Unbenannt'
+        self.gruppe = 'Untitled'  # 'Unbenannt'
         self.kanal = 'Untitled'
         self.amp = 'amp'
         self.phase = 'phase'

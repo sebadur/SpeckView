@@ -6,12 +6,57 @@
 
 import numpy
 from lmfit import Parameters
-from multiprocessing import Pool, cpu_count
+from multiprocessing import Pool
 
 from SpeckView.Sonstige import int_max, Nichts
 
 
-fit_genauigkeit = {
+class Fit:
+    def __init__(self, par, amplitude_komplett, phase_komplett, frequenz, puls):
+        """
+        :type par: SpeckView.BE.Parameter.Parameter
+        :type amplitude_komplett: numpy.multiarray.ndarray
+        :type phase_komplett: numpy.multiarray.ndarray
+        :type frequenz: numpy.multiarray.ndarray
+        :type puls: () -> None
+        """
+        self.par = par
+        self.amplitude_komplett = amplitude_komplett
+        self.phase_komplett = phase_komplett
+        self.puls = puls
+        global _par
+        _par = par
+        self.frequenz = _bereich(frequenz)
+
+    def start(self):
+        """
+        Startet den Fit. Alle Zuweisungen wurden durch den Konstruktor vorgenommen.
+        :return: Gefittete Amplitude und gefittete oder geglättete Phase im Bereich um Resonanzfrequenz +/- Versatz
+        :rtype: list[ModelResult], list[ModelResult]
+        """
+        global _par, _amplitude_komplett, _phase_komplett, _frequenz, _puls, _weiter
+        _par = self.par
+        _amplitude_komplett = self.amplitude_komplett
+        _phase_komplett = self.phase_komplett
+        _frequenz = self.frequenz
+        _puls = self.puls
+        _weiter = True
+        return Pool().map(_fit_punkt, range(_par.pixel ** 2))
+
+    @staticmethod
+    def stopp():
+        """
+        Bricht den Fit möglichst bald ab.
+        """
+        global _weiter
+        _weiter = False
+
+
+_weiter = True
+_puls = None
+""" :type: () -> None """
+
+_fit_genauigkeit = {
     'ftol': 1e-9,  # Geringe Toleranzen
     'xtol': 1e-9,
     'gtol': 1e-9,
@@ -19,22 +64,19 @@ fit_genauigkeit = {
     'factor': 0.1  # Kleinster möglicher Schrittwert für die leastsq-Methode
 }
 
-amplitude_komplett = []
-phase_komplett = []
-frequenz = []
-par = None
+_amplitude_komplett = []
+_phase_komplett = []
+_frequenz = []
+_par = None
 """ :type: SpeckView.BE.Parameter.Parameter """
 
-erg_amp = None
-""" :type: mmap.mmap """
 
-
-def bereich(feld):
+def _bereich(feld):
     """
     :type feld: numpy.multiarray.ndarray
-    :rtype: numpy.multiarrayndarray
+    :rtype: numpy.multiarray.ndarray
     """
-    return feld[par.bereich_links:par.bereich_rechts]
+    return feld[_par.bereich_links:_par.bereich_rechts]
 
 
 def _fit_punkt(n):
@@ -43,71 +85,73 @@ def _fit_punkt(n):
     :return: Gefittete Amplitude und gefittete oder geglättete Phase im Bereich um Resonanzfrequenz +/- Versatz
     :rtype: list
     """
+    if not _weiter:
+        return None
 
     # ----------------------------------------
     # ----------- AMPLITUDE fitten -----------
     # ----------------------------------------
 
-    amplitude = par.filter(bereich(amplitude_komplett[n]))
+    amplitude = _par.filter(_bereich(_amplitude_komplett[n]))
     index_max = numpy.argmax(amplitude)
-    start_freq = frequenz[index_max]
+    start_freq = _frequenz[index_max]
     start_amp = amplitude[index_max]
     start_off = amplitude[0]  # Erster betrachteter Wert ist bereits eine gute Näherung für den Untergrund
 
     # Fitparameter für die Fitfunktion
     par_amp = Parameters()
-    par_amp.add('resfreq', value=start_freq, min=par.fmin, max=par.fmax)
-    par_amp.add('amp', value=start_amp, min=par.amp_min, max=par.amp_max)
+    par_amp.add('resfreq', value=start_freq, min=_par.fmin, max=_par.fmax)
+    par_amp.add('amp', value=start_amp, min=_par.amp_min, max=_par.amp_max)
     par_amp.add(
         'guete',
-        value=0.5*(par.amp.guete_max + par.amp.guete_min),
-        min=par.amp.guete_min,
-        max=par.amp.guete_max
+        value=0.5*(_par.amp.guete_max + _par.amp.guete_min),
+        min=_par.amp.guete_min,
+        max=_par.amp.guete_max
     )
-    par_amp.add('off', value=start_off, min=par.amp.off_min, max=par.amp.off_max)
+    par_amp.add('off', value=start_off, min=_par.amp.off_min, max=_par.amp.off_max)
 
-    amp = par.mod_amp.fit(
+    amp = _par.mod_amp.fit(
         data=amplitude,
-        freq=frequenz,
+        freq=_frequenz,
         params=par_amp,
-        fit_kws=fit_genauigkeit
+        fit_kws=_fit_genauigkeit
     )
     # Resonanzfrequenz
     resfreq = amp.best_values['resfreq']
 
-    erg_amp[n] = amp.best_values['amp']
-    return
+    #puls()
+    return amp.best_values['amp']
 
     # ----------------------------------------
     # ------------- PHASE fitten -------------
     # ----------------------------------------
 
-    halb = abs(par.phase_versatz) * par.df  # Halbe Frequenzbreite des Phasenversatzes
+    halb = abs(_par.phase_versatz) * _par.df  # Halbe Frequenzbreite des Phasenversatzes
     von = resfreq - halb  # Untere Versatzgrenze
     bis = resfreq + halb  # Obere Versatzgrenze
 
-    if von < par.fmin:  # Die Resonanzfrequenz liegt zu weit links:
+    if von < _par.fmin:  # Die Resonanzfrequenz liegt zu weit links:
         # Auswahlbereich nach rechts verschieben, aber nicht über den Frequenzbereich hinaus
-        bis = min(bis - von + par.fmin, par.fmax)
-        von = par.fmin
-    elif bis > par.fmax:  # Die Resonanz lieg zu weit rechts:
-        von = max(von - bis + par.fmax, par.fmin)  # Verschieben, aber nicht über linken Rand hinaus
-        bis = par.fmax
+        bis = min(bis - von + _par.fmin, _par.fmax)
+        von = _par.fmin
+    elif bis > _par.fmax:  # Die Resonanz lieg zu weit rechts:
+        von = max(von - bis + _par.fmax, _par.fmin)  # Verschieben, aber nicht über linken Rand hinaus
+        bis = _par.fmax
 
     # Phase und Frequenz beschneiden
-    index_von = par.index_freq(von)
-    index_bis = par.index_freq(bis)
-    wahl_phase = bereich(phase_komplett[n])[index_von:index_bis]
-    wahl_frequenz = frequenz[index_von:index_bis]
+    index_von = _par.index_freq(von)
+    index_bis = _par.index_freq(bis)
+    wahl_phase = _bereich(_phase_komplett[n])[index_von:index_bis]
+    wahl_frequenz = _frequenz[index_von:index_bis]
 
     # Fitparameter für die Fitfunktion
     par_ph = Parameters()
     par_ph.add('resfreq', value=resfreq, min=von, max=bis)
-    par_ph.add('guete', value=3, min=par.phase.guete_min, max=par.phase.guete_max)
-    par_ph.add('phase', value=200, min=par.phase.off_min, max=par.phase.off_max)
+    par_ph.add('guete', value=3, min=_par.phase.guete_min, max=_par.phase.guete_max)
+    par_ph.add('phase', value=200, min=_par.phase.off_min, max=_par.phase.off_max)
 
-    if par.mod_ph is not None:
-        ph = par.mod_ph.fit(
+    if _par.mod_ph is not None:
+        ph = _par.mod_ph.fit(
             data=wahl_phase,
             freq=wahl_frequenz,
             params=par_ph,
@@ -116,24 +160,16 @@ def _fit_punkt(n):
         )
     else:
         ph = Nichts()
-        ph.best_fit = par.filter(wahl_phase)
+        ph.best_fit = _par.filter(wahl_phase)
         ph.chisqr = 0  # TODO
 
     # Zusätzliche Informationen für den Phasenfit:
-    if par.phase_versatz < 0:
+    if _par.phase_versatz < 0:
         ph.mit_versatz = ph.best_fit[0]
-    elif par.phase_versatz > 0:
+    elif _par.phase_versatz > 0:
         ph.mit_versatz = ph.best_fit[-1]
     else:
         ph.mit_versatz = ph.best_fit[len(ph.best_fit) // 2]
     ph.frequenzen = wahl_frequenz
 
     return amp, ph
-
-
-def fit():
-    """
-    :return: Gefittete Amplitude und gefittete oder geglättete Phase im Bereich um Resonanzfrequenz +/- Versatz
-    :rtype: list[ModelResult], list[ModelResult]
-    """
-    return Pool(cpu_count() - 1).map(_fit_punkt, range(par.pixel ** 2))
