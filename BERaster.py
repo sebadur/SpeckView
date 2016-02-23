@@ -50,7 +50,6 @@ def load(dateiname, modus=None):
     :param modus: Gwyddion-Ausführungsmodus (Vorschau / Interaktiv)
     :rtype: gwy.Container
     """
-
     parser = ConfigParser()
     parser.read(dateiname)
     pixel = parser.getint(konfig, 'pixel')

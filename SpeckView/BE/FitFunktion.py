@@ -10,34 +10,34 @@ import numpy as np
 in_grad = 180 / np.pi
 
 
-def resonance_lorentz(freq, resfreq, amp, guete, off):
+def resonance_lorentz(freq, resfreq, amp, guete, untergrund):
     """
     :type freq: float
     :type resfreq: float
     :type amp: float
     :type guete: float
-    :type off: float
+    :type untergrund: float
     :return: Lorentzverteilung für den Cantilever
     :rtype: float
     """
     return amp * resfreq**2 / (
         guete * np.sqrt((freq**2 - resfreq**2)**2 + (freq * resfreq / guete)**2)
-    ) + off
+    ) + untergrund
 
 
-def drive_lorentz(freq, resfreq, amp, guete, off):
+def drive_lorentz(freq, resfreq, amp, guete, untergrund):
     """
     :type freq: float
     :type resfreq: float
     :type amp: float
     :type guete: float
-    :type off: float
+    :type untergrund: float
     :return: Lorentzverteilung für das antreibende System
     :rtype: float
     """
     return amp * resfreq**2 / np.sqrt(
         (freq**2 - resfreq**2) ** 2 + (freq * resfreq / guete)**2
-    ) + off
+    ) + untergrund
 
 
 def phase_lorentz(freq, resfreq, guete, phase):

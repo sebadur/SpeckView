@@ -59,9 +59,11 @@ class Parameter:
         self.mittelungen = mittelungen
         """ Anzahl der Mittelungen pro Rasterpunkt """
         self.mod_amp = Model(amp_fitfkt)
+        self.fkt_amp = amp_fitfkt
         """ Zum Fitten der Amplitude in Abhängigkeit zur Phase für jede einzelne Messung verwendete Funktion """
         self.mod_ph = Model(ph_fitfkt)
-        """ Fit-Model für die Phase """
+        self.fkt_ph = ph_fitfkt
+        """ Fitfunktion für die Phase """
         self.filter = filter_fkt
         """ Die Funktion zum Glätten der Messdaten """
         self.phase_versatz = phase_versatz

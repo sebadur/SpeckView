@@ -10,6 +10,8 @@ from multiprocessing import Pool
 
 from SpeckView.Sonstige import int_max, Nichts
 
+from Ergebnis import Ergebnis
+
 
 class Fit:
     def __init__(self, par, amplitude_komplett, phase_komplett, frequenz, puls):
@@ -26,25 +28,36 @@ class Fit:
         self.puls = puls
         global _par
         _par = par
-        self.frequenz = _bereich(frequenz)
+        self.frequenz = _bereich(frequenz)  # Vorsicht wegen Abhängigkeiten (_par)
 
     def _belegen(self):
-        global _par, _amplitude_komplett, _phase_komplett, _frequenz, _puls, _weiter
-        _par = self.par
-        _amplitude_komplett = self.amplitude_komplett
-        _phase_komplett = self.phase_komplett
-        _frequenz = self.frequenz
-        _puls = self.puls
-        _weiter = True
+        global _instanz
+        if _instanz is not self:
+            _instanz = self
+            global _par, _amplitude_komplett, _phase_komplett, _frequenz, _puls, _weiter
+            _par = self.par
+            _amplitude_komplett = self.amplitude_komplett
+            _phase_komplett = self.phase_komplett
+            _frequenz = self.frequenz
+            _puls = self.puls
+            _weiter = True
 
     def start(self):
         """
         Startet den Fit. Alle Zuweisungen wurden durch den Konstruktor vorgenommen.
         :return: Gefittete Amplitude und gefittete oder geglättete Phase im Bereich um Resonanzfrequenz +/- Versatz
-        :rtype: list[ModelResult], list[ModelResult]
+        :rtype: list[Ergebnis]
         """
         self._belegen()
         return Pool().map(_fit_punkt, range(_par.pixel ** 2))
+
+    def vorschau(self, n):
+        """
+        :type n: int
+        :rtype: Ergebnis
+        """
+        self._belegen()
+        return _fit_punkt(n)
 
     @staticmethod
     def stopp():
@@ -55,6 +68,8 @@ class Fit:
         _weiter = False
 
 
+_instanz = None
+""" :type: Fit """
 _weiter = True
 _puls = None
 """ :type: () -> None """
@@ -69,7 +84,8 @@ _fit_genauigkeit = {
 
 _amplitude_komplett = []
 _phase_komplett = []
-_frequenz = []
+_frequenz = None
+""" :type: numpy.multiarray.ndarray """
 _par = None
 """ :type: SpeckView.BE.Parameter.Parameter """
 
@@ -111,7 +127,7 @@ def _fit_punkt(n):
         min=_par.amp.guete_min,
         max=_par.amp.guete_max
     )
-    par_amp.add('off', value=start_off, min=_par.amp.off_min, max=_par.amp.off_max)
+    par_amp.add('untergrund', value=start_off, min=_par.amp.off_min, max=_par.amp.off_max)
 
     amp = _par.mod_amp.fit(
         data=amplitude,
@@ -123,7 +139,16 @@ def _fit_punkt(n):
     resfreq = amp.best_values['resfreq']
 
     #puls()
-    return amp.best_values['amp']
+    return Ergebnis(
+        amp=amp.best_values['amp'],
+        phase=0,
+        resfreq=amp.best_values['resfreq'],
+        guete=amp.best_values['guete'],
+        untergrund=amp.best_values['untergrund'],
+        amp_fkt=_par.fkt_amp,
+        phase_fkt=_par.fkt_ph,
+        frequenzen=_frequenz
+    )
 
     # ----------------------------------------
     # ------------- PHASE fitten -------------
