@@ -6,7 +6,7 @@
 import gtk
 import numpy
 from scipy.signal import savgol_filter
-from ctypes import c_float
+from ctypes import c_double
 
 from SpeckView.Plotter import Plotter
 
@@ -127,21 +127,12 @@ class Laden(gtk.Builder):
             phase = amplitude  # TODO: Wenn keine Phase vorhanden ist
 
         # Gwyddion-Datenfeld:
-        c_feld = c_float * self.pixel ** 2
+        c_feld = c_double * self.pixel ** 2
         daten = c_feld.from_address(self.datenfeld.get_data_pointer())
 
         # Fitten:
         fit = Fit(par, amplitude, phase, frequenz, self.fortschritt.pulse)
         daten[:] = fit.start()
-
-        if BERaster.DEBUG:
-            from matplotlib import pyplot
-            pyplot.matshow(numpy.array(daten[:]).reshape((self.pixel, self.pixel)))
-            pyplot.show()
-
-        """for x in range(self.pixel):
-            for y in range(self.pixel):
-                self.datenfeld.set_val(x, y, erg_amp[x + y * self.pixel])"""
 
         self.ff.hide_all()
         gtk.main_quit()

@@ -28,12 +28,7 @@ class Fit:
         _par = par
         self.frequenz = _bereich(frequenz)
 
-    def start(self):
-        """
-        Startet den Fit. Alle Zuweisungen wurden durch den Konstruktor vorgenommen.
-        :return: Gefittete Amplitude und gefittete oder geglättete Phase im Bereich um Resonanzfrequenz +/- Versatz
-        :rtype: list[ModelResult], list[ModelResult]
-        """
+    def _belegen(self):
         global _par, _amplitude_komplett, _phase_komplett, _frequenz, _puls, _weiter
         _par = self.par
         _amplitude_komplett = self.amplitude_komplett
@@ -41,6 +36,14 @@ class Fit:
         _frequenz = self.frequenz
         _puls = self.puls
         _weiter = True
+
+    def start(self):
+        """
+        Startet den Fit. Alle Zuweisungen wurden durch den Konstruktor vorgenommen.
+        :return: Gefittete Amplitude und gefittete oder geglättete Phase im Bereich um Resonanzfrequenz +/- Versatz
+        :rtype: list[ModelResult], list[ModelResult]
+        """
+        self._belegen()
         return Pool().map(_fit_punkt, range(_par.pixel ** 2))
 
     @staticmethod
