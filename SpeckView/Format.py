@@ -31,8 +31,8 @@ def volume_data(c, inhalt, einheit_xy, einheit_z,
 
     # Neues, nicht initialisiertes Datenfeld erstellen:
     vd = gwy.DataField(pixel, pixel_y, dim, dim_y, False)
-    vd.set_si_unit_xy()
-    vd.set_si_unit_z()
+    vd.set_si_unit_xy(einheit_xy)
+    vd.set_si_unit_z(einheit_z)
 
     # Belegen:
     c_feld = c_double * (pixel * pixel_y)
