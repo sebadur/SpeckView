@@ -16,3 +16,4 @@ class Konfiguration:
         self.amp = 'amp'
         self.phase = 'phase'
         self.pixel = 'pixel'
+        self.dim = 'dim'

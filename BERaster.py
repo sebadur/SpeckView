@@ -50,25 +50,18 @@ def load(dateiname, modus=None):
     :param modus: Gwyddion-Ausführungsmodus (Vorschau / Interaktiv)
     :rtype: gwy.Container
     """
-    parser = ConfigParser()
-    parser.read(dateiname)
-    pixel = parser.getint(konfig, 'pixel')
-    dim = parser.getfloat(konfig, 'dim')
-    d = gwy.DataField(pixel, pixel, dim, dim, False)
-
-    c = gwy.Container()
-    c.set_object_by_name('/0/data', d)
-
     if modus == gwy.RUN_INTERACTIVE:
         # PLUGIN AUSFÜHREN:
         import sys
-        from os import path
         if not DEBUG:
             sys.path.append('.gwyddion/pygwy/')
             ui = '.gwyddion/pygwy/SpeckView/ui.glade'
         else:
             ui = 'SpeckView/ui.glade'
         from SpeckView.BE.Laden import Laden
-        Laden(ui, path.dirname(dateiname), parser, d)
+        geladen = Laden(ui, dateiname)
+        return geladen.container
 
-    return c
+    else:
+        # TODO VORSCHAU:
+        return None

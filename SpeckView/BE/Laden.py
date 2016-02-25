@@ -3,12 +3,14 @@
 @author: Sebastian Badur
 """
 
+from os import path
 import gtk
 import numpy
 from scipy.signal import savgol_filter
-from ctypes import c_double
+from ConfigParser import ConfigParser
 
 from SpeckView.Plotter import Plotter
+from SpeckView.Format import Container
 
 from Fit import Fit
 from TDMS import TDMS
@@ -18,21 +20,22 @@ from Parameter import Parameter, Fitparameter
 
 
 class Laden(gtk.Builder):
-    def __init__(self, glade, pfad, parser, datenfeld):
+    def __init__(self, glade, konfig_datei):
         """
         :type glade: str
-        :type pfad: str
-        :type parser: ConfigParser.ConfigParser
+        :type konfig_datei: str
         """
         gtk.Builder.__init__(self)
-        self.datenfeld = datenfeld
+
+        self.container = None
+        """ :type: Container """
 
         self.amplitude = None
         """ :type: numpy.multiarray.ndarray """
         self.phase = None
         """ :type: numpy.multiarray.ndarray """
 
-        self.pfad = pfad
+        self.pfad = path.dirname(konfig_datei)
         self.add_from_file(glade)
         self.connect_signals({
             'be_ende': gtk.main_quit,
@@ -49,10 +52,15 @@ class Laden(gtk.Builder):
         self.ui = self.get_object('be_laden')
         """ :type: gtk.Window """
 
+        parser = ConfigParser()
+        parser.read(konfig_datei)
+
         konf = Konfiguration()
         self.konf = konf
-        self.pixel = parser.getint(konf.konfig, konf.pixel)
-        self.spinbox('be_pixel').set_value(self.pixel)
+        self.pixel = self.spinbox('be_pixel')
+        self.pixel.set_value(parser.getint(konf.konfig, konf.pixel))
+        self.dim = self.spinbox('be_dim')
+        self.dim.set_value(parser.getfloat(konf.konfig, konf.dim))
 
         self.df = self.spinbox('be_df')
         self.df.set_value(parser.getfloat(konf.konfig, konf.df))
@@ -63,7 +71,6 @@ class Laden(gtk.Builder):
         self.fmax = self.spinbox('be_fmax')
         self.fmax.set_value(parser.getint(konf.konfig, konf.fmax))
 
-        self.get_object('be_pixel2').set_upper(self.pixel ** 2)
         self.plotter = Plotter("Frequenz (Hz)", "Amplitude (V)")
         self.get_object('be_vorschau').add(self.plotter)
         self.ui.show_all()
@@ -108,7 +115,8 @@ class Laden(gtk.Builder):
             fmin=fmin,
             fmax=fmax,
             df=df,
-            pixel=self.pixel,
+            pixel=int(self.pixel.get_value()),
+            dim=self.dim.get_value(),
             mittelungen=int(self.mittelungen.get_value()),
             amp_fitfkt=resonance_lorentz,  # TODO
             ph_fitfkt=phase_phenom,  # TODO
@@ -144,6 +152,7 @@ class Laden(gtk.Builder):
         self.phase = tdms.messwerte_lesen(self.konf.phase)
         if self.phase is None:
             self.phase = self.amplitude  # TODO: Wenn keine Phase vorhanden ist
+        self.get_object('be_pixel2').set_upper(self.pixel.get_value() ** 2)
 
     def fit_starten(self, _):
         par, frequenz = self.fitparameter()
@@ -152,23 +161,31 @@ class Laden(gtk.Builder):
         self.ui.hide_all()
         self.ff.show_all()
         self.fortschritt.set_value(0)
-        self.fortschritt.set_pulse_step(1 / self.pixel)
+        self.fortschritt.set_pulse_step(1 / par.pixel)
         while gtk.events_pending():
             gtk.main_iteration_do(True)
 
         # Messwerte einlesen:
         self.messwerte_lesen(par)
 
-        # Gwyddion-Datenfeld:
-        c_feld = c_double * self.pixel ** 2
-        daten = c_feld.from_address(self.datenfeld.get_data_pointer())
-
         # Fitten:
         fit = Fit(par, self.amplitude, self.phase, frequenz, self.fortschritt.pulse)
         erg = fit.start()
 
-        # Ermittelte Amplitude:
-        daten[:] = [n.amp for n in erg]
+        # Gwyddion-Datenfeld:
+        self.container = Container()
+        self.container.volume_data(
+            inhalt=[n.amp for n in erg],
+            titel="Amplitude",
+            dim=par.dim,
+            pixel=par.pixel
+        )
+        self.container.volume_data(
+            inhalt=[n.phase for n in erg],
+            titel="Phase",
+            dim=par.dim,
+            pixel=par.pixel
+        )
 
         self.ff.hide_all()
         gtk.main_quit()

@@ -138,18 +138,6 @@ def _fit_punkt(n):
     # Resonanzfrequenz
     resfreq = amp.best_values['resfreq']
 
-    #puls()
-    return Ergebnis(
-        amp=amp.best_values['amp'],
-        phase=0,
-        resfreq=amp.best_values['resfreq'],
-        guete=amp.best_values['guete'],
-        untergrund=amp.best_values['untergrund'],
-        amp_fkt=_par.fkt_amp,
-        phase_fkt=_par.fkt_ph,
-        frequenzen=_frequenz
-    )
-
     # ----------------------------------------
     # ------------- PHASE fitten -------------
     # ----------------------------------------
@@ -178,26 +166,30 @@ def _fit_punkt(n):
     par_ph.add('guete', value=3, min=_par.phase.guete_min, max=_par.phase.guete_max)
     par_ph.add('phase', value=200, min=_par.phase.off_min, max=_par.phase.off_max)
 
-    if _par.mod_ph is not None:
-        ph = _par.mod_ph.fit(
-            data=wahl_phase,
-            freq=wahl_frequenz,
-            params=par_ph,
-            method='cg'  # 'differential_evolution' passt auch gut
-            # TODO fit_kws=self.fit_genauigkeit
-        )
-    else:
-        ph = Nichts()
-        ph.best_fit = _par.filter(wahl_phase)
-        ph.chisqr = 0  # TODO
+    ph = _par.mod_ph.fit(
+        data=wahl_phase,
+        freq=wahl_frequenz,
+        params=par_ph,
+        method='cg'  # 'differential_evolution' passt auch gut
+        # TODO fit_kws=self.fit_genauigkeit
+    )
 
     # Zusätzliche Informationen für den Phasenfit:
     if _par.phase_versatz < 0:
-        ph.mit_versatz = ph.best_fit[0]
+        phase = ph.best_fit[0]
     elif _par.phase_versatz > 0:
-        ph.mit_versatz = ph.best_fit[-1]
+        phase = ph.best_fit[-1]
     else:
-        ph.mit_versatz = ph.best_fit[len(ph.best_fit) // 2]
-    ph.frequenzen = wahl_frequenz
+        phase = ph.best_fit[len(ph.best_fit) // 2]
 
-    return amp, ph
+    #puls()
+    return Ergebnis(
+        amp=amp.best_values['amp'],
+        phase=phase,
+        resfreq=amp.best_values['resfreq'],
+        guete=amp.best_values['guete'],
+        untergrund=amp.best_values['untergrund'],
+        amp_fkt=_par.fkt_amp,
+        phase_fkt=_par.fkt_ph,
+        frequenzen=_frequenz
+    )

@@ -10,13 +10,14 @@ from SpeckView.Sonstige import Fehler
 
 class Parameter:
     """ Alle für den Fit einer Rastermessung nötigen Messparameter """
-    def __init__(self, fmin, fmax, df, pixel, mittelungen, amp_fitfkt, ph_fitfkt, filter_fkt,
+    def __init__(self, fmin, fmax, df, pixel, dim, mittelungen, amp_fitfkt, ph_fitfkt, filter_fkt,
                  phase_versatz, bereich_links, bereich_rechts, amp, amp_min, amp_max, phase, konf, pfad):
         """
         :type fmin: int
         :type fmax: int
         :type df: int
         :type pixel: int
+        :type dim: float
         :type mittelungen: int
         :param amp_fitfkt: Mit den Parametern Frequenz, Resonanzfrequenz, Amplitude, Güte und Offset
         :type amp_fitfkt: (float, float, float, float, float) -> float
@@ -56,6 +57,8 @@ class Parameter:
         """ Endfrequenz des Spektrums der Bandanregung im gewählten Frequenzbereich in Hz """
         self.pixel = pixel
         """ Pixelgröße des (quadratischen) Messbereichs """
+        self.dim = dim
+        """ Physikalische Dimension des Messbereichs """
         self.mittelungen = mittelungen
         """ Anzahl der Mittelungen pro Rasterpunkt """
         self.mod_amp = Model(amp_fitfkt)
