@@ -6,11 +6,13 @@
 from os import path
 import gtk
 import numpy
+# noinspection PyUnresolvedReferences
+from gwy import Container
 from scipy.signal import savgol_filter
 from ConfigParser import ConfigParser
 
 from SpeckView.Plotter import Plotter
-from SpeckView.Format import Container
+from SpeckView import Format
 
 from Fit import Fit
 from TDMS import TDMS
@@ -180,36 +182,24 @@ class Laden(gtk.Builder):
 
         # Gwyddion-Datenfeld:
         self.container = Container()
-        self.container.volume_data(
-            inhalt=[n.amp for n in erg],
-            titel="Amplitude (a.u.)",
-            dim=par.dim,
-            pixel=par.pixel
-        )
-        self.container.volume_data(
-            inhalt=[n.phase for n in erg],
-            titel="Phase (°)",
-            dim=par.dim,
-            pixel=par.pixel
-        )
-        self.container.volume_data(
-            inhalt=[n.resfreq for n in erg],
-            titel="Resonanzfrequenz (Hz)",
-            dim=par.dim,
-            pixel=par.pixel
-        )
-        self.container.volume_data(
-            inhalt=[n.guete for n in erg],
-            titel="Guete",
-            dim=par.dim,
-            pixel=par.pixel
-        )
-        self.container.volume_data(
-            inhalt=[n.untergrund for n in erg],
-            titel="Untergrund (a.u.)",
-            dim=par.dim,
-            pixel=par.pixel
-        )
+        xy = Format.si_unit("m")
+
+        def anlegen(inhalt, titel, einheit):
+            Format.volume_data(
+                c=self.container,
+                inhalt=inhalt,
+                einheit_xy=xy,
+                einheit_z=Format.si_unit(einheit),
+                titel=titel,
+                dim=par.dim,
+                pixel=par.pixel
+            )
+
+        anlegen([n.amp for n in erg], "Amplitude (a.u.)", "a.u.")
+        anlegen([n.phase for n in erg], "Phase (°)", "°")
+        anlegen([n.resfreq for n in erg], "Resonanzfrequenz (Hz)", "Hz")
+        anlegen([n.guete for n in erg], u"Güte", "")
+        anlegen([n.untergrund for n in erg], "Untergrund (a.u.)", "a.u.")
 
         self.ff.hide_all()
         gtk.main_quit()
