@@ -135,6 +135,21 @@ def _fit_punkt(n):
         params=par_amp,
         fit_kws=_fit_genauigkeit
     )
+
+    #puls()
+    # Wenn keine Phase gefittet werden soll:
+    if _par.fkt_ph is None:
+        return Ergebnis(
+            amp=amp.best_values['amp'],
+            phase=0,
+            resfreq=amp.best_values['resfreq'],
+            guete=amp.best_values['guete'],
+            untergrund=amp.best_values['untergrund'],
+            amp_fkt=_par.fkt_amp,
+            phase_fkt=_par.fkt_ph,
+            frequenzen=_frequenz
+        )
+
     # Resonanzfrequenz
     resfreq = amp.best_values['resfreq']
 
@@ -182,7 +197,6 @@ def _fit_punkt(n):
     else:
         phase = ph.best_fit[len(ph.best_fit) // 2]
 
-    #puls()
     return Ergebnis(
         amp=amp.best_values['amp'],
         phase=phase,

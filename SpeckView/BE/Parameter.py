@@ -64,7 +64,10 @@ class Parameter:
         self.mod_amp = Model(amp_fitfkt)
         self.fkt_amp = amp_fitfkt
         """ Zum Fitten der Amplitude in Abhängigkeit zur Phase für jede einzelne Messung verwendete Funktion """
-        self.mod_ph = Model(ph_fitfkt)
+        if ph_fitfkt is not None:
+            self.mod_ph = Model(ph_fitfkt)
+        else:
+            self.mod_ph = None
         self.fkt_ph = ph_fitfkt
         """ Fitfunktion für die Phase """
         self.filter = filter_fkt

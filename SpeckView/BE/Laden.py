@@ -83,6 +83,13 @@ class Laden(gtk.Builder):
         """
         return self.get_object(name)
 
+    def combobox(self, name):
+        """
+        :type name: str
+        :rtype: gtk.ComboBox
+        """
+        return self.get_object(name)
+
     def vorschau(self, box):
         """
         :type box: gtk.SpinButton
@@ -119,7 +126,7 @@ class Laden(gtk.Builder):
             dim=self.dim.get_value(),
             mittelungen=int(self.mittelungen.get_value()),
             amp_fitfkt=resonance_lorentz,  # TODO
-            ph_fitfkt=phase_phenom,  # TODO
+            ph_fitfkt=[phase_phenom, None][self.combobox('be_methode_phase').get_active()],  # TODO
             filter_fkt=lambda verlauf: savgol_filter(verlauf, 15, 3),  # TODO
             phase_versatz=50,  # TODO und eigene Fitparameter für Phase!
             bereich_links=bereich_links,
@@ -149,9 +156,8 @@ class Laden(gtk.Builder):
         """
         tdms = TDMS(par)
         self.amplitude = tdms.messwerte_lesen(self.konf.amp)
-        self.phase = tdms.messwerte_lesen(self.konf.phase)
-        if self.phase is None:
-            self.phase = self.amplitude  # TODO: Wenn keine Phase vorhanden ist
+        if par.fkt_ph is not None:
+            self.phase = tdms.messwerte_lesen(self.konf.phase)
         self.get_object('be_pixel2').set_upper(self.pixel.get_value() ** 2)
 
     def fit_starten(self, _):
@@ -176,13 +182,31 @@ class Laden(gtk.Builder):
         self.container = Container()
         self.container.volume_data(
             inhalt=[n.amp for n in erg],
-            titel="Amplitude",
+            titel="Amplitude (a.u.)",
             dim=par.dim,
             pixel=par.pixel
         )
         self.container.volume_data(
             inhalt=[n.phase for n in erg],
-            titel="Phase",
+            titel="Phase (°)",
+            dim=par.dim,
+            pixel=par.pixel
+        )
+        self.container.volume_data(
+            inhalt=[n.resfreq for n in erg],
+            titel="Resonanzfrequenz (Hz)",
+            dim=par.dim,
+            pixel=par.pixel
+        )
+        self.container.volume_data(
+            inhalt=[n.guete for n in erg],
+            titel="Guete",
+            dim=par.dim,
+            pixel=par.pixel
+        )
+        self.container.volume_data(
+            inhalt=[n.untergrund for n in erg],
+            titel="Untergrund (a.u.)",
             dim=par.dim,
             pixel=par.pixel
         )

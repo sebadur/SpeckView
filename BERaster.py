@@ -53,9 +53,11 @@ def load(dateiname, modus=None):
     if modus == gwy.RUN_INTERACTIVE:
         # PLUGIN AUSFÜHREN:
         import sys
+        import os
+        home = os.getenv('HOME')
         if not DEBUG:
-            sys.path.append('.gwyddion/pygwy/')
-            ui = '.gwyddion/pygwy/SpeckView/ui.glade'
+            sys.path.append(home + '/.gwyddion/pygwy/')
+            ui = home + '/.gwyddion/pygwy/SpeckView/ui.glade'
         else:
             ui = 'SpeckView/ui.glade'
         from SpeckView.BE.Laden import Laden

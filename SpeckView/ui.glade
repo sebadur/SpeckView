@@ -948,9 +948,16 @@
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <child>
-                              <object class="GtkComboBox" id="combobox2">
+                              <object class="GtkComboBox" id="be_methode_phase">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
+                                <property name="model">liststore2</property>
+                                <child>
+                                  <object class="GtkCellRendererCombo" id="cellrenderertext1"/>
+                                  <attributes>
+                                    <attribute name="text">0</attribute>
+                                  </attributes>
+                                </child>
                               </object>
                               <packing>
                                 <property name="expand">True</property>
@@ -1367,6 +1374,20 @@
     <data>
       <row>
         <col id="0">Standard</col>
+      </row>
+    </data>
+  </object>
+  <object class="GtkListStore" id="liststore2">
+    <columns>
+      <!-- column-name phase_methode -->
+      <column type="gchararray"/>
+    </columns>
+    <data>
+      <row>
+        <col id="0" translatable="yes">Phänomenologischer Fit</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">Keine Phase</col>
       </row>
     </data>
   </object>

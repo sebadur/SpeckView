@@ -1,0 +1,9 @@
+[konfig]
+format = BE Raster
+fmin = 230000
+fmax = 246000
+df = 10.000000
+mittelungen = 1
+dim = 0.0001
+pixel = 128
+datum = "01.02.2016 13:19:36"
