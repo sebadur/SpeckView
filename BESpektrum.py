@@ -12,8 +12,11 @@ plugin_menu = "/SpeckView/BE-Spektren darstellen"
 def run():
     import sys
     import os
-    sys.path.append(os.getenv('HOME') + '/.gwyddion/pygwy/')
-    from SpeckView import Format
+    home = os.getenv('HOME')
+    sys.path.append(home + '/.gwyddion/pygwy/')
 
-    c = gwy.gwy_app_data_browser_get_current(gwy.APP_CONTAINER)
-    sys.stderr.write(Format.get_custom(c))
+    from SpeckView.BE.Spektrum import Spektrum
+    Spektrum(
+        home + '/.gwyddion/pygwy/SpeckView/BE/spektrum.glade',
+        gwy.gwy_app_data_browser_get_current(gwy.APP_CONTAINER)
+    )

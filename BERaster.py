@@ -8,7 +8,6 @@ from ConfigParser import ConfigParser, Error
 import gwy
 plugin_type = 'FILE'
 plugin_desc = "Bandanregungsspektrum (.ini)"
-plugin_menu = ""
 
 
 DEBUG = False
@@ -52,18 +51,24 @@ def load(dateiname, modus=None):
     """
     if modus == gwy.RUN_INTERACTIVE:
         # PLUGIN AUSFÜHREN:
-        import sys
-        import os
-        home = os.getenv('HOME')
-        if not DEBUG:
-            sys.path.append(home + '/.gwyddion/pygwy/')
-            ui = home + '/.gwyddion/pygwy/SpeckView/ui.glade'
-        else:
-            ui = 'SpeckView/ui.glade'
+        home = _import()
+
         from SpeckView.BE.Laden import Laden
-        geladen = Laden(ui, dateiname)
+        geladen = Laden(home + '/.gwyddion/pygwy/SpeckView/BE/laden.glade', dateiname)
         return geladen.container
 
     else:
         # TODO VORSCHAU:
         return None
+
+
+def _import():
+    """
+    :rtype: str
+    """
+    import sys
+    import os
+    home = os.getenv('HOME')
+    if not DEBUG:
+        sys.path.append(home + '/.gwyddion/pygwy/')
+    return home

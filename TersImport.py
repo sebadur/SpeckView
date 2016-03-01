@@ -4,7 +4,6 @@ import numpy as np
 import gwy
 plugin_type = "FILE"
 plugin_desc = "Importing Ters-Files (.ters)"
-plugin_menu = ""
 
 
 def detect_by_name(filename):

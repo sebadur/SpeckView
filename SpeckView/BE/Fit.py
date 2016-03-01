@@ -8,7 +8,7 @@ import numpy
 from lmfit import Parameters
 from multiprocessing import Pool
 
-from SpeckView.Sonstige import int_max, Nichts
+from SpeckView.Sonstige import int_max
 
 from Ergebnis import Ergebnis
 

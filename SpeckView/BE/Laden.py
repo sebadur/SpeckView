@@ -14,10 +14,12 @@ from ConfigParser import ConfigParser
 from SpeckView.Plotter import Plotter
 from SpeckView import Format
 
+from Ergebnis import amp_verlauf
 from Fit import Fit
 from TDMS import TDMS
 from FitFunktion import *
 from Konfiguration import Konfiguration
+from Konstant import *
 from Parameter import Parameter, Fitparameter
 
 
@@ -51,7 +53,7 @@ class Laden(gtk.Builder):
         self.fortschritt = self.get_object('fortschritt')
         """ :type: gtk.ProgressBar """
 
-        self.ui = self.get_object('be_laden')
+        self.ui = self.get_object('fenster_laden')
         """ :type: gtk.Window """
 
         parser = ConfigParser()
@@ -104,7 +106,7 @@ class Laden(gtk.Builder):
         erg = fit.vorschau(n)
         self.plotter.leeren()
         self.plotter.plot(frequenz, self.amplitude[n])
-        self.plotter.plot(erg.frequenzen, erg.amp_verlauf())
+        self.plotter.plot(erg.frequenzen, amp_verlauf(erg))
         self.plotter.draw()
 
     def fitparameter(self):
@@ -124,9 +126,9 @@ class Laden(gtk.Builder):
             fmin=fmin,
             fmax=fmax,
             df=df,
-            pixel=int(self.pixel.get_value()),
+            pixel=self.pixel.get_value_as_int(),
             dim=self.dim.get_value(),
-            mittelungen=int(self.mittelungen.get_value()),
+            mittelungen=self.mittelungen.get_value_as_int(),
             amp_fitfkt=resonance_lorentz,  # TODO
             ph_fitfkt=[phase_phenom, None][self.combobox('be_methode_phase').get_active()],  # TODO
             filter_fkt=lambda verlauf: savgol_filter(verlauf, 15, 3),  # TODO
@@ -200,6 +202,12 @@ class Laden(gtk.Builder):
         anlegen([n.resfreq for n in erg], "Resonanzfrequenz (Hz)", "Hz")
         anlegen([n.guete for n in erg], u"Güte", "")
         anlegen([n.untergrund for n in erg], "Untergrund (a.u.)", "a.u.")
+
+        Format.set_custom(self.container, ERGEBNIS, erg)
+        Format.set_custom(self.container, PIXEL, par.pixel)
+        Format.set_custom(self.container, FREQUENZ, frequenz)  # TODO Durchaus Verschwendung, auch in erg.frequenzen
+        Format.set_custom(self.container, AMPLITUDE, self.amplitude)
+        Format.set_custom(self.container, PHASE, self.phase)
 
         self.ff.hide_all()
         gtk.main_quit()

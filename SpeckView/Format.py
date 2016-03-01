@@ -5,7 +5,14 @@
 
 # noinspection PyUnresolvedReferences
 import gwy
-from ctypes import c_double
+from ctypes import c_double, c_byte
+import cPickle
+from cStringIO import StringIO
+from os import SEEK_END
+
+
+SPECKVIEW = '/speckview/'
+BYTE = '/byte'
 
 
 def volume_data(c, inhalt, einheit_xy, einheit_z,
@@ -58,21 +65,40 @@ def si_unit(einheit):
     return si
 
 
-def set_custom(c, obj):
+def set_custom(c, name, objekt):
     """
     :type c: gwy.Container
+    :type name: str
+    :type objekt: object
     """
-    anz = 1
-    brick = gwy.Brick(1, 1, anz, 1, 1, 1, False)
-    c_feld = c_double * anz
+    ser = StringIO()
+    cPickle.dump(objekt, ser, cPickle.HIGHEST_PROTOCOL)
+    ser.seek(0, SEEK_END)
+    byte = ser.tell()
+    go = gwy.DataField((byte+1)/4, 1, 1, 1, False)
 
-    c.set_object_by_name('/custom', brick)
+    c_feld = c_byte * byte
+    zgr = c_feld.from_address(go.get_data_pointer())
+    zgr[:] = [ord(n) for n in ser.getvalue()]
+
+    c.set_object_by_name(SPECKVIEW + name, go)
+    c.set_int32_by_name(SPECKVIEW + name + BYTE, byte)
+    c.set_boolean_by_name(SPECKVIEW + name + '/visible', False)
 
 
-def get_custom(c):
+def get_custom(c, name):
     """
     :type c: gwy.Container
+    :type name: str
+    :rtype: object
     """
-    c.get_object_by_name('/custom')
+    go = c.get_object_by_name(SPECKVIEW + name)
+    byte = c.get_int32_by_name(SPECKVIEW + name + BYTE)
+
+    c_feld = c_byte * byte
+    zgr = c_feld.from_address(go.get_data_pointer())
+    ser = StringIO(zgr)
+
+    return cPickle.load(ser)
 
 # wnd = gwy_app_find_window_for_channel(gwy_app_data_browser_get_containers()[0],-1).get_window()

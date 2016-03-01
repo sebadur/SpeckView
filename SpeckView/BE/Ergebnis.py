@@ -27,11 +27,13 @@ class Ergebnis:
         self.phase_fkt = phase_fkt
         self.frequenzen = frequenzen
 
-    def amp_verlauf(self):
-        """
-        :rtype: list[float]
-        """
-        return [
-            self.amp_fkt(freq, self.resfreq, self.amp, self.guete, self.untergrund)
-            for freq in self.frequenzen
-        ]
+
+def amp_verlauf(erg):
+    """
+    :type erg: Ergebnis
+    :rtype: list[float]
+    """
+    return [
+        erg.amp_fkt(freq, erg.resfreq, erg.amp, erg.guete, erg.untergrund)
+        for freq in erg.frequenzen
+    ]
