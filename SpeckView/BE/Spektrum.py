@@ -10,6 +10,7 @@ from SpeckView import Format
 
 from Ergebnis import amp_verlauf
 from Konstant import *
+from Parameter import frequenzen, frequenzen_voll
 
 
 class Spektrum(gtk.Builder):
@@ -22,10 +23,8 @@ class Spektrum(gtk.Builder):
 
         self.erg = Format.get_custom(c, ERGEBNIS)
         """ :type: list[SpeckView.BE.Ergebnis.Ergebnis] """
-        self.pixel = Format.get_custom(c, PIXEL)
-        """ :type: int """
-        self.freq = Format.get_custom(c, FREQUENZ)
-        """ :type: list """
+        self.par = Format.get_custom(c, PARAMETER)
+        """ :type: SpeckView.BE.Parameter.Parameter """
         self.amplitude = Format.get_custom(c, AMPLITUDE)
         """ :type: list """
         self.phase = Format.get_custom(c, PHASE)
@@ -57,11 +56,11 @@ class Spektrum(gtk.Builder):
         return self.get_object(name)
 
     def n(self):
-        return self.x.get_value_as_int() + self.y.get_value_as_int() * self.pixel
+        return self.x.get_value_as_int() + self.y.get_value_as_int() * self.par.pixel
 
     def aktualisieren(self, _):
         n = self.n()
         self.plotter.leeren()
-        self.plotter.plot(self.freq, self.amplitude[n])
-        self.plotter.plot(self.erg[n].frequenzen, amp_verlauf(self.erg[n]))
+        self.plotter.plot(frequenzen_voll(self.par), self.amplitude[n])
+        self.plotter.plot(frequenzen(self.par), amp_verlauf(self.par, self.erg[n]))
         self.plotter.draw()

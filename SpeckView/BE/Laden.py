@@ -8,7 +8,6 @@ import gtk
 import numpy
 # noinspection PyUnresolvedReferences
 from gwy import Container
-from scipy.signal import savgol_filter
 from ConfigParser import ConfigParser
 
 from SpeckView.Plotter import Plotter
@@ -17,10 +16,9 @@ from SpeckView import Format
 from Ergebnis import amp_verlauf
 from Fit import Fit
 from TDMS import TDMS
-from FitFunktion import *
 from Konfiguration import Konfiguration
 from Konstant import *
-from Parameter import Parameter, Fitparameter
+from Parameter import *
 
 
 class Laden(gtk.Builder):
@@ -99,19 +97,20 @@ class Laden(gtk.Builder):
         :type box: gtk.SpinButton
         """
         n = box.get_value()
-        par, frequenz = self.fitparameter()
+        par = self.fitparameter()
+        frequenz = frequenzen(par)
         if self.amplitude is None:
             self.messwerte_lesen(par)
-        fit = Fit(par, self.amplitude, self.phase, frequenz, self.fortschritt.pulse)
+        fit = Fit(par, self.amplitude, self.phase, self.fortschritt.pulse)
         erg = fit.vorschau(n)
         self.plotter.leeren()
-        self.plotter.plot(frequenz, self.amplitude[n])
-        self.plotter.plot(erg.frequenzen, amp_verlauf(erg))
+        self.plotter.plot(frequenzen_voll(par), self.amplitude[n])
+        self.plotter.plot(frequenz, amp_verlauf(par, erg))
         self.plotter.draw()
 
     def fitparameter(self):
         """
-        :rtype: (Parameter, numpy.multiarray.ndarray)
+        :rtype: Parameter
         """
         fmin = self.fmin.get_value()
         fmax = self.fmax.get_value()
@@ -129,9 +128,10 @@ class Laden(gtk.Builder):
             pixel=self.pixel.get_value_as_int(),
             dim=self.dim.get_value(),
             mittelungen=self.mittelungen.get_value_as_int(),
-            amp_fitfkt=resonance_lorentz,  # TODO
-            ph_fitfkt=[phase_phenom, None][self.combobox('be_methode_phase').get_active()],  # TODO
-            filter_fkt=lambda verlauf: savgol_filter(verlauf, 15, 3),  # TODO
+            amp_fitfkt=0,  # TODO
+            ph_fitfkt=self.combobox('be_methode_phase').get_active(),
+            filter_breite=self.spinbox('be_savgol_koeff').get_value_as_int(),
+            filter_ordnung=self.spinbox('be_savgol_ordnung').get_value_as_int(),
             phase_versatz=50,  # TODO und eigene Fitparameter für Phase!
             bereich_links=bereich_links,
             bereich_rechts=bereich_rechts,
@@ -151,7 +151,7 @@ class Laden(gtk.Builder):
             ),
             konf=self.konf,
             pfad=self.pfad
-        ), numpy.arange(fmin, fmax, df)
+        )
 
     def messwerte_lesen(self, par):
         """
@@ -160,12 +160,12 @@ class Laden(gtk.Builder):
         """
         tdms = TDMS(par)
         self.amplitude = tdms.messwerte_lesen(self.konf.amp)
-        if par.fkt_ph is not None:
+        if par.nr_fkt_ph is not None:
             self.phase = tdms.messwerte_lesen(self.konf.phase)
         self.get_object('be_pixel2').set_upper(self.pixel.get_value() ** 2)
 
     def fit_starten(self, _):
-        par, frequenz = self.fitparameter()
+        par = self.fitparameter()
 
         # Fortschrittsanzeige:
         self.ui.hide_all()
@@ -179,7 +179,7 @@ class Laden(gtk.Builder):
         self.messwerte_lesen(par)
 
         # Fitten:
-        fit = Fit(par, self.amplitude, self.phase, frequenz, self.fortschritt.pulse)
+        fit = Fit(par, self.amplitude, self.phase, self.fortschritt.pulse)
         erg = fit.start()
 
         # Gwyddion-Datenfeld:
@@ -204,8 +204,7 @@ class Laden(gtk.Builder):
         anlegen([n.untergrund for n in erg], "Untergrund (a.u.)", "a.u.")
 
         Format.set_custom(self.container, ERGEBNIS, erg)
-        Format.set_custom(self.container, PIXEL, par.pixel)
-        Format.set_custom(self.container, FREQUENZ, frequenz)  # TODO Durchaus Verschwendung, auch in erg.frequenzen
+        Format.set_custom(self.container, PARAMETER, par)
         Format.set_custom(self.container, AMPLITUDE, self.amplitude)
         Format.set_custom(self.container, PHASE, self.phase)
 

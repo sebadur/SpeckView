@@ -30,11 +30,11 @@ if __name__ == '__main__':
     debug = "debug"
     Format.set_custom(
         c, debug,
-        [Ergebnis(1, 2, 3, 4, 5, resonance_lorentz, phase_lorentz, numpy.arange(10, 20, 0.1))]
+        [Ergebnis(1, 2, 3, 4, 5)]
     )
     erg = Format.get_custom(c, debug)
     """ :type: list[SpeckView.BE.Ergebnis.Ergebnis] """
     print erg
-    print erg[0].frequenzen
+    print erg[0].amp
 
     BERaster.load(messung, gwy.RUN_INTERACTIVE)

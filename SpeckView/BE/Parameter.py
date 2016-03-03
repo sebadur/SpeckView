@@ -3,14 +3,14 @@
 @author: Sebastian Badur
 """
 
-from lmfit import Model
+import numpy
 
 from SpeckView.Sonstige import Fehler
 
 
 class Parameter:
     """ Alle für den Fit einer Rastermessung nötigen Messparameter """
-    def __init__(self, fmin, fmax, df, pixel, dim, mittelungen, amp_fitfkt, ph_fitfkt, filter_fkt,
+    def __init__(self, fmin, fmax, df, pixel, dim, mittelungen, amp_fitfkt, ph_fitfkt, filter_breite, filter_ordnung,
                  phase_versatz, bereich_links, bereich_rechts, amp, amp_min, amp_max, phase, konf, pfad):
         """
         :type fmin: int
@@ -19,12 +19,12 @@ class Parameter:
         :type pixel: int
         :type dim: float
         :type mittelungen: int
-        :param amp_fitfkt: Mit den Parametern Frequenz, Resonanzfrequenz, Amplitude, Güte und Offset
-        :type amp_fitfkt: (float, float, float, float, float) -> float
-        :param ph_fitfkt: Fitmethodik für die Phase
-        :type ph_fitfkt: (float, float, float, float) -> float
-        :param filter_fkt: Die zur Glättung der Messdaten zu verwendende Filterfunktion
-        :type filter_fkt: (list) -> list
+        :param amp_fitfkt: Nummer der Fitfunktion für die Amplitude
+        :type amp_fitfkt: int
+        :param ph_fitfkt: Nummer der Fitfunktion für die Phase
+        :type ph_fitfkt: int
+        :type filter_breite: int
+        :type filter_ordnung: int
         :param phase_versatz: Die zur Resonanz gehörige Phase wird diese Anzahl an Messpunkten neben der
         Resonanzfrequenz aus der geglätteten Phasenmessung entnommen.
         :type phase_versatz: int
@@ -51,8 +51,12 @@ class Parameter:
         self.phase = phase
         """ Beschränkungen der Fitparameter für die Phase """
 
+        self.fmin_voll = fmin
+        """ Anfangsfrequenz des vollen Bereichs der aufgenommenen Bandanregung """
         self.fmin = fmin + bereich_links * df
         """ Anfangsfrequenz des Spektrums der Bandanregung im gewählten Frequenzbereich in Hz """
+        self.fmax_voll = fmax
+        """ Endfrequenz des vollen Messbereichs der Bandanregung """
         self.fmax = fmax - bereich_rechts * df
         """ Endfrequenz des Spektrums der Bandanregung im gewählten Frequenzbereich in Hz """
         self.pixel = pixel
@@ -61,22 +65,19 @@ class Parameter:
         """ Physikalische Dimension des Messbereichs """
         self.mittelungen = mittelungen
         """ Anzahl der Mittelungen pro Rasterpunkt """
-        self.mod_amp = Model(amp_fitfkt)
-        self.fkt_amp = amp_fitfkt
+        self.nr_fkt_amp = amp_fitfkt
         """ Zum Fitten der Amplitude in Abhängigkeit zur Phase für jede einzelne Messung verwendete Funktion """
-        if ph_fitfkt is not None:
-            self.mod_ph = Model(ph_fitfkt)
-        else:
-            self.mod_ph = None
-        self.fkt_ph = ph_fitfkt
+        self.nr_fkt_ph = ph_fitfkt
         """ Fitfunktion für die Phase """
-        self.filter = filter_fkt
-        """ Die Funktion zum Glätten der Messdaten """
+        self.filter_breite = filter_breite
+        """ Breite des Filterfensters """
+        self.filter_ordnung = filter_ordnung
+        """ Ordnung des Filterpolynoms """
         self.phase_versatz = phase_versatz
         """ Die Phase wird diese Anzahl an Messpunkten neben der Resonanzfrequenz der Phasenauswertung entnommen """
         self.bereich_links = bereich_links
         """ Linker Rand für Fitbereich """
-        self.bereich_rechts = -(bereich_rechts + 1)
+        self.bereich_rechts = bereich_rechts
         """ Rechter Rand des Fitbereichs """
 
         self.konf = konf
@@ -89,13 +90,43 @@ class Parameter:
         self.messpunkte = int((fmax - fmin) // df)
         """ Anzahl der Messpunkte bezüglich der Freqzenz """
 
-    def index_freq(self, freq):
-        """
-        :type freq: float
-        :return: Index der Frequenz innerhalb des beschränkten Frequenzbereichs
-        :rtype: int
-        """
-        return int((freq - self.fmin) // self.df)
+
+def index_freq(par, freq):
+    """
+    :type par: Parameter
+    :type freq: float
+    :return: Index der Frequenz innerhalb des beschränkten Frequenzbereichs
+    :rtype: int
+    """
+    return int((freq - par.fmin) // par.df)
+
+
+_freq = []
+
+
+def frequenzen(par):
+    """
+    :type par: Parameter
+    :rtype: numpy.multiarray.ndarray
+    """
+    global _freq
+    if len(_freq) < 1 or _freq[0] != par.fmin or _freq[-1] != par.fmax or _freq[1]-_freq[0] != par.df:
+        _freq = numpy.arange(par.fmin, par.fmax, par.df)
+    return _freq
+
+
+_freqv = []
+
+
+def frequenzen_voll(par):
+    """
+    :type par: Parameter
+    :rtype: numpy.multiarray.ndarray
+    """
+    global _freqv
+    if len(_freqv) < 1 or _freqv[0] != par.fmin_voll or _freqv[-1] != par.fmax_voll or _freqv[1]-_freqv[0] != par.df:
+        _freqv = numpy.arange(par.fmin_voll, par.fmax_voll, par.df)
+    return _freqv
 
 
 class Fitparameter:

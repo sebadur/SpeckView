@@ -5,6 +5,5 @@
 
 AMPLITUDE = 'ber-amplitude'
 PHASE = 'ber-phase'
-FREQUENZ = 'ber-frequenz'
 ERGEBNIS = 'ber-ergebnis'
-PIXEL = 'ber-pixel'
+PARAMETER = 'ber-parameter'

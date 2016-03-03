@@ -10,6 +10,8 @@ import numpy as np
 in_grad = 180 / np.pi
 
 
+# AMPLITUDE:
+
 def resonance_lorentz(freq, resfreq, amp, guete, untergrund):
     """
     :type freq: float
@@ -39,6 +41,14 @@ def drive_lorentz(freq, resfreq, amp, guete, untergrund):
         (freq**2 - resfreq**2) ** 2 + (freq * resfreq / guete)**2
     ) + untergrund
 
+
+fkt_amp = [
+    resonance_lorentz,
+    drive_lorentz
+]
+
+
+# PHASE:
 
 def phase_lorentz(freq, resfreq, guete, phase):
     """
@@ -80,3 +90,11 @@ def phase_phenom(freq, resfreq, guete, phase):
     return (in_grad * np.arctan(
         (resfreq - freq) / (500 * guete)
     ) + phase) % 360 - 180
+
+
+fkt_ph = [
+    phase_lorentz,
+    phase_aghr,
+    phase_phenom,
+    None
+]

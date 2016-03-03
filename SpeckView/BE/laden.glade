@@ -1384,6 +1384,12 @@
     </columns>
     <data>
       <row>
+        <col id="0" translatable="yes">Phase aus Lorentzverteilung</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">Phase nach AGHR</col>
+      </row>
+      <row>
         <col id="0" translatable="yes">Phänomenologischer Fit</col>
       </row>
       <row>

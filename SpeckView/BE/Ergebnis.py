@@ -3,9 +3,12 @@
 @author: Sebastian Badur
 """
 
+from Parameter import frequenzen
+from FitFunktion import fkt_amp
+
 
 class Ergebnis:
-    def __init__(self, amp, phase, resfreq, guete, untergrund, amp_fkt, phase_fkt, frequenzen):
+    def __init__(self, amp, phase, resfreq, guete, untergrund):
         """
         :type amp: float
         :type phase: float
@@ -14,26 +17,21 @@ class Ergebnis:
         :type untergrund: float
         :type resfreq: float
         :type guete: float
-        :type amp_fkt: (amp=float, float, float, float) -> float
-        :type phase_fkt: (amp=float, float, float, float) -> float
-        :type frequenzen: numpy.multiarray.ndarray
         """
         self.amp = amp
         self.phase = phase
         self.resfreq = resfreq
         self.guete = guete
         self.untergrund = untergrund
-        self.amp_fkt = amp_fkt
-        self.phase_fkt = phase_fkt
-        self.frequenzen = frequenzen
 
 
-def amp_verlauf(erg):
+def amp_verlauf(par, erg):
     """
+    :type par: SpeckView.BE.Parameter.Parameter
     :type erg: Ergebnis
     :rtype: list[float]
     """
     return [
-        erg.amp_fkt(freq, erg.resfreq, erg.amp, erg.guete, erg.untergrund)
-        for freq in erg.frequenzen
+        fkt_amp[par.nr_fkt_amp](freq, erg.resfreq, erg.amp, erg.guete, erg.untergrund)
+        for freq in frequenzen(par)
     ]

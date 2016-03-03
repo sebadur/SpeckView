@@ -5,40 +5,46 @@
 """
 
 import numpy
-from lmfit import Parameters
+from lmfit import Parameters, Model
+from scipy.signal import savgol_filter
 from multiprocessing import Pool
 
 from SpeckView.Sonstige import int_max
 
 from Ergebnis import Ergebnis
+from FitFunktion import fkt_amp, fkt_ph
+from Parameter import index_freq, frequenzen
 
 
 class Fit:
-    def __init__(self, par, amplitude_komplett, phase_komplett, frequenz, puls):
+    def __init__(self, par, amplitude_voll, phase_voll, puls):
         """
         :type par: SpeckView.BE.Parameter.Parameter
-        :type amplitude_komplett: numpy.multiarray.ndarray
-        :type phase_komplett: numpy.multiarray.ndarray
-        :type frequenz: numpy.multiarray.ndarray
+        :type amplitude_voll: numpy.multiarray.ndarray
+        :type phase_voll: numpy.multiarray.ndarray
         :type puls: () -> None
         """
         self.par = par
-        self.amplitude_komplett = amplitude_komplett
-        self.phase_komplett = phase_komplett
+        self.amplitude_voll = amplitude_voll
+        self.phase_voll = phase_voll
         self.puls = puls
-        global _par
-        _par = par
-        self.frequenz = _bereich(frequenz)  # Vorsicht wegen Abhängigkeiten (_par)
+        self.frequenz = frequenzen(par)
 
     def _belegen(self):
         global _instanz
         if _instanz is not self:
             _instanz = self
-            global _par, _amplitude_komplett, _phase_komplett, _frequenz, _puls, _weiter
+            global _par, _amplitude_voll, _phase_voll, _frequenz, _mod_amp, _mod_ph, _puls, _weiter
             _par = self.par
-            _amplitude_komplett = self.amplitude_komplett
-            _phase_komplett = self.phase_komplett
+            _amplitude_voll = self.amplitude_voll
+            _phase_voll = self.phase_voll
             _frequenz = self.frequenz
+            _mod_amp = Model(fkt_amp[self.par.nr_fkt_amp])
+            fp = fkt_ph[self.par.nr_fkt_ph]
+            if fp is not None:
+                _mod_ph = Model(fkt_ph[self.par.nr_fkt_ph])
+            else:
+                _mod_ph = None
             _puls = self.puls
             _weiter = True
 
@@ -82,12 +88,16 @@ _fit_genauigkeit = {
     'factor': 0.1  # Kleinster möglicher Schrittwert für die leastsq-Methode
 }
 
-_amplitude_komplett = []
-_phase_komplett = []
+_amplitude_voll = []
+_phase_voll = []
 _frequenz = None
 """ :type: numpy.multiarray.ndarray """
 _par = None
 """ :type: SpeckView.BE.Parameter.Parameter """
+_mod_amp = None
+""" :type: Model """
+_mod_ph = None
+""" :type: None """
 
 
 def _bereich(feld):
@@ -95,7 +105,10 @@ def _bereich(feld):
     :type feld: numpy.multiarray.ndarray
     :rtype: numpy.multiarray.ndarray
     """
-    return feld[_par.bereich_links:_par.bereich_rechts]
+    if _par.bereich_rechts == 0:
+        return feld[_par.bereich_links:]
+    else:
+        return feld[_par.bereich_links:-_par.bereich_rechts]
 
 
 def _fit_punkt(n):
@@ -111,7 +124,7 @@ def _fit_punkt(n):
     # ----------- AMPLITUDE fitten -----------
     # ----------------------------------------
 
-    amplitude = _par.filter(_bereich(_amplitude_komplett[n]))
+    amplitude = savgol_filter(_bereich(_amplitude_voll[n]), _par.filter_breite, _par.filter_ordnung)
     index_max = numpy.argmax(amplitude)
     start_freq = _frequenz[index_max]
     start_amp = amplitude[index_max]
@@ -129,25 +142,22 @@ def _fit_punkt(n):
     )
     par_amp.add('untergrund', value=start_off, min=_par.amp.off_min, max=_par.amp.off_max)
 
-    amp = _par.mod_amp.fit(
+    amp = _mod_amp.fit(
         data=amplitude,
         freq=_frequenz,
         params=par_amp,
         fit_kws=_fit_genauigkeit
     )
 
-    #puls()
+    # TODO puls()
     # Wenn keine Phase gefittet werden soll:
-    if _par.fkt_ph is None:
+    if _mod_ph is None:
         return Ergebnis(
             amp=amp.best_values['amp'],
             phase=0,
             resfreq=amp.best_values['resfreq'],
             guete=amp.best_values['guete'],
-            untergrund=amp.best_values['untergrund'],
-            amp_fkt=_par.fkt_amp,
-            phase_fkt=_par.fkt_ph,
-            frequenzen=_frequenz
+            untergrund=amp.best_values['untergrund']
         )
 
     # Resonanzfrequenz
@@ -170,9 +180,9 @@ def _fit_punkt(n):
         bis = _par.fmax
 
     # Phase und Frequenz beschneiden
-    index_von = _par.index_freq(von)
-    index_bis = _par.index_freq(bis)
-    wahl_phase = _bereich(_phase_komplett[n])[index_von:index_bis]
+    index_von = index_freq(_par, von)
+    index_bis = index_freq(_par, bis)
+    wahl_phase = _bereich(_phase_voll[n])[index_von:index_bis]
     wahl_frequenz = _frequenz[index_von:index_bis]
 
     # Fitparameter für die Fitfunktion
@@ -181,7 +191,7 @@ def _fit_punkt(n):
     par_ph.add('guete', value=3, min=_par.phase.guete_min, max=_par.phase.guete_max)
     par_ph.add('phase', value=200, min=_par.phase.off_min, max=_par.phase.off_max)
 
-    ph = _par.mod_ph.fit(
+    ph = _mod_ph.fit(
         data=wahl_phase,
         freq=wahl_frequenz,
         params=par_ph,
@@ -202,8 +212,5 @@ def _fit_punkt(n):
         phase=phase,
         resfreq=amp.best_values['resfreq'],
         guete=amp.best_values['guete'],
-        untergrund=amp.best_values['untergrund'],
-        amp_fkt=_par.fkt_amp,
-        phase_fkt=_par.fkt_ph,
-        frequenzen=_frequenz
+        untergrund=amp.best_values['untergrund']
     )
