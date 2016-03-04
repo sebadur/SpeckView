@@ -14,6 +14,7 @@ def detect_by_name(filename):
 
 
 def detect_by_content(filename, head, tail, filesize):
+    return 0
     return 100
 
 

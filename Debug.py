@@ -5,8 +5,8 @@
 
 import gwy
 plugin_type = 'PROCESS'
-plugin_desc = ""
-plugin_menu = ""
+plugin_desc = "Debugfunktionen"
+plugin_menu = "/SpeckView/Debug"
 
 
 def run():
