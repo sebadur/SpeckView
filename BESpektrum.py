@@ -17,6 +17,6 @@ def run():
 
     from SpeckView.BE.Spektrum import Spektrum
     Spektrum(
-        home + '/.gwyddion/pygwy/SpeckView/BE/spektrum.glade',
+        home + '/.gwyddion/pygwy/SpeckView/BE/',
         gwy.gwy_app_data_browser_get_current(gwy.APP_CONTAINER)
     )

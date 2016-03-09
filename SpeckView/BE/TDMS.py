@@ -25,7 +25,7 @@ class TDMS:
         _par = self.par
         _typ = typ
         return numpy.reshape(
-            Pool().map(_lade_tdms, range(1, _par.pixel + 1)),
+            Pool().map(_lade_tdms, range(0, _par.pixel)),  # TODO: Konvention 0 oder 1
             (-1, _par.messpunkte)
         )
 

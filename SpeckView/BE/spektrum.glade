@@ -14,6 +14,7 @@
   </object>
   <object class="GtkWindow" id="fenster_spektrum">
     <property name="can_focus">False</property>
+    <signal name="delete-event" handler="ende" swapped="no"/>
     <child>
       <object class="GtkVBox" id="vbox7">
         <property name="visible">True</property>
@@ -35,7 +36,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkSpinButton" id="bes_x">
+              <object class="GtkSpinButton" id="x">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="invisible_char">•</property>
@@ -44,7 +45,7 @@
                 <property name="primary_icon_sensitive">True</property>
                 <property name="secondary_icon_sensitive">True</property>
                 <property name="adjustment">adjustment18</property>
-                <signal name="value-changed" handler="bes_aktualisieren" swapped="no"/>
+                <signal name="value-changed" handler="aktualisieren" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">True</property>
@@ -65,7 +66,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkSpinButton" id="bes_y">
+              <object class="GtkSpinButton" id="y">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="invisible_char">•</property>
@@ -74,7 +75,7 @@
                 <property name="primary_icon_sensitive">True</property>
                 <property name="secondary_icon_sensitive">True</property>
                 <property name="adjustment">adjustment19</property>
-                <signal name="value-changed" handler="bes_aktualisieren" swapped="no"/>
+                <signal name="value-changed" handler="aktualisieren" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">True</property>
@@ -90,7 +91,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkHBox" id="bes_vorschau">
+          <object class="GtkHBox" id="vorschau">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <child>

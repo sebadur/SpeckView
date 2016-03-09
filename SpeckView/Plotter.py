@@ -31,8 +31,8 @@ class Plotter(gtk.VBox):
     def leeren(self):
         self.axes.hold(False)
 
-    def plot(self, x, y):
-        self.axes.plot(x, y, antialiased=True)
+    def plot(self, x, y, **args):
+        self.axes.plot(x, y, antialiased=True, **args)
         self.axes.hold(True)
 
     def draw(self):

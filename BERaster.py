@@ -36,7 +36,7 @@ def detect_by_content(dateiname, kopf, s, g):
     try:
         parser = ConfigParser()
         parser.read(dateiname)
-        if parser.get(konfig, 'format') == 'BE Raster':
+        if parser.get(konfig, 'format') == '"BE Raster"':
             return 100
     except Error:
         pass
@@ -54,7 +54,7 @@ def load(dateiname, modus=None):
         home = _import()
 
         from SpeckView.BE.Laden import Laden
-        geladen = Laden(home + '/.gwyddion/pygwy/SpeckView/BE/laden.glade', dateiname)
+        geladen = Laden(home + '/.gwyddion/pygwy/SpeckView/BE/', dateiname)
         return geladen.container
 
     else:

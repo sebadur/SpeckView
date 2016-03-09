@@ -16,15 +16,13 @@ def run():
 if __name__ == '__main__':
     import BERaster
     BERaster.DEBUG = True
-    messung = "/home/sebadur/Dokumente/BE-Raster/20160217-img008/konfig.ber"
+    messung = "/home/sebadur/Dokumente/BaTiO3/2016-03-08-R/16-03-08-11-16-50.ber"
 
     print "Name: " + str(BERaster.detect_by_name(messung))
 
     print "Inhalt: " + str(BERaster.detect_by_content(messung, "", "", 0))
 
-    import numpy
     from SpeckView import Format
-    from SpeckView.BE.FitFunktion import *
     from SpeckView.BE.Ergebnis import Ergebnis
     c = gwy.Container()
     debug = "debug"

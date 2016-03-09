@@ -50,46 +50,46 @@ fkt_amp = [
 
 # PHASE:
 
-def phase_lorentz(freq, resfreq, guete, phase):
+def phase_lorentz(freq, resfreq, guete, rel):
     """
     :type freq: float
     :type resfreq: float
     :type guete: float
-    :type phase: float
+    :type rel: float
     :return: Phase in Grad
     :rtype: float
     """
     return (in_grad * np.arctan(
         resfreq * freq / (guete * (resfreq**2 - freq**2))
-    ) + phase) % 360 - 180
+    ) + rel) % 360 - 180
 
 
-def phase_aghr(freq, resfreq, guete, phase):
+def phase_aghr(freq, resfreq, guete, rel):
     """
     :type freq: float
     :type resfreq: float
     :type guete: float
-    :type phase: float
+    :type rel: float
     :return: Phase in Grad nach T. R. Albrecht, P. Grutter, D. Horne, D. Rugar, J. Appl. Phys., 1991, 69, 668–673.
     :rtype: float
     """
     return (in_grad * np.arctan(
         5 * guete * (freq / resfreq - resfreq / freq)
-    ) + phase) % 360 - 180
+    ) + rel) % 360 - 180
 
 
-def phase_phenom(freq, resfreq, guete, phase):
+def phase_phenom(freq, resfreq, guete, rel):
     """
     :type freq: float
     :type resfreq: float
     :type guete: float
-    :type phase: float
+    :type rel: float
     :return: Phase in Grad
     :rtype: float
     """
     return (in_grad * np.arctan(
         (resfreq - freq) / (500 * guete)
-    ) + phase) % 360 - 180
+    ) + rel) % 360 - 180
 
 
 fkt_ph = [

@@ -98,11 +98,6 @@
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
   </object>
-  <object class="GtkAdjustment" id="be_pixel2">
-    <property name="upper">1</property>
-    <property name="step_increment">1</property>
-    <property name="page_increment">10</property>
-  </object>
   <object class="GtkWindow" id="bek">
     <property name="can_focus">False</property>
     <child>
@@ -428,7 +423,7 @@
   </object>
   <object class="GtkWindow" id="fenster_laden">
     <property name="can_focus">False</property>
-    <signal name="delete-event" handler="be_ende" swapped="no"/>
+    <signal name="delete-event" handler="ende" swapped="no"/>
     <child>
       <object class="GtkVBox" id="vbox1">
         <property name="visible">True</property>
@@ -542,7 +537,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkSpinButton" id="be_df">
+                              <object class="GtkSpinButton" id="df">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="invisible_char">•</property>
@@ -563,7 +558,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkSpinButton" id="be_mittelungen">
+                              <object class="GtkSpinButton" id="mittelungen">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="invisible_char">•</property>
@@ -583,7 +578,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkSpinButton" id="be_fmin">
+                              <object class="GtkSpinButton" id="fmin">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="invisible_char">•</property>
@@ -603,7 +598,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkSpinButton" id="be_fmax">
+                              <object class="GtkSpinButton" id="fmax">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="invisible_char">•</property>
@@ -630,7 +625,7 @@
                               </object>
                             </child>
                             <child>
-                              <object class="GtkSpinButton" id="be_pixel">
+                              <object class="GtkSpinButton" id="pixel">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="invisible_char">•</property>
@@ -646,7 +641,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkSpinButton" id="be_dim">
+                              <object class="GtkSpinButton" id="dim">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="invisible_char">•</property>
@@ -655,6 +650,7 @@
                                 <property name="primary_icon_sensitive">True</property>
                                 <property name="secondary_icon_sensitive">True</property>
                                 <property name="adjustment">adjustment17</property>
+                                <property name="digits">9</property>
                               </object>
                               <packing>
                                 <property name="left_attach">3</property>
@@ -708,9 +704,17 @@
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <child>
-                              <object class="GtkComboBox" id="combobox1">
+                              <object class="GtkComboBox" id="methode_amp">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
+                                <property name="model">liststore1</property>
+                                <property name="active">0</property>
+                                <child>
+                                  <object class="GtkCellRendererText" id="cellrenderertext2"/>
+                                  <attributes>
+                                    <attribute name="text">0</attribute>
+                                  </attributes>
+                                </child>
                               </object>
                               <packing>
                                 <property name="expand">True</property>
@@ -801,7 +805,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkSpinButton" id="be_amp_min">
+                              <object class="GtkSpinButton" id="amp_min">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="invisible_char">•</property>
@@ -822,7 +826,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkSpinButton" id="be_off_min">
+                              <object class="GtkSpinButton" id="off_min">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="invisible_char">•</property>
@@ -843,7 +847,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkSpinButton" id="be_q_min">
+                              <object class="GtkSpinButton" id="q_min">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="invisible_char">•</property>
@@ -864,7 +868,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkSpinButton" id="be_q_max">
+                              <object class="GtkSpinButton" id="q_max">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="invisible_char">•</property>
@@ -885,7 +889,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkSpinButton" id="be_off_max">
+                              <object class="GtkSpinButton" id="off_max">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="invisible_char">•</property>
@@ -906,7 +910,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkSpinButton" id="be_amp_max">
+                              <object class="GtkSpinButton" id="amp_max">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="invisible_char">•</property>
@@ -965,10 +969,11 @@
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <child>
-                              <object class="GtkComboBox" id="be_methode_phase">
+                              <object class="GtkComboBox" id="methode_phase">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
                                 <property name="model">liststore2</property>
+                                <property name="active">0</property>
                                 <child>
                                   <object class="GtkCellRendererCombo" id="cellrenderertext1"/>
                                   <attributes>
@@ -1054,7 +1059,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkSpinButton" id="be_phase_off_min">
+                              <object class="GtkSpinButton" id="phase_off_min">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="invisible_char">•</property>
@@ -1075,7 +1080,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkSpinButton" id="be_phase_q_min">
+                              <object class="GtkSpinButton" id="phase_q_min">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="invisible_char">•</property>
@@ -1094,7 +1099,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkSpinButton" id="be_phase_q_max">
+                              <object class="GtkSpinButton" id="phase_q_max">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="invisible_char">•</property>
@@ -1115,7 +1120,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkSpinButton" id="be_phase_off_max">
+                              <object class="GtkSpinButton" id="phase_off_max">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="invisible_char">•</property>
@@ -1182,7 +1187,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkSpinButton" id="be_savgol_koeff">
+                          <object class="GtkSpinButton" id="savgol_koeff">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="invisible_char">•</property>
@@ -1212,7 +1217,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkSpinButton" id="be_savgol_ordnung">
+                          <object class="GtkSpinButton" id="savgol_ordnung">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="invisible_char">•</property>
@@ -1275,16 +1280,16 @@
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <child>
-                      <object class="GtkSpinButton" id="be_vorschau_pixel2">
+                      <object class="GtkRadioButton" id="vorschau_amp">
+                        <property name="label" translatable="yes">Amplitude</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
-                        <property name="invisible_char">•</property>
-                        <property name="primary_icon_activatable">False</property>
-                        <property name="secondary_icon_activatable">False</property>
-                        <property name="primary_icon_sensitive">True</property>
-                        <property name="secondary_icon_sensitive">True</property>
-                        <property name="adjustment">be_pixel2</property>
-                        <signal name="value-changed" handler="vorschau" swapped="no"/>
+                        <property name="receives_default">False</property>
+                        <property name="use_action_appearance">False</property>
+                        <property name="active">True</property>
+                        <property name="draw_indicator">True</property>
+                        <property name="group">vorschau_phase</property>
+                        <signal name="toggled" handler="vorschau" swapped="no"/>
                       </object>
                       <packing>
                         <property name="expand">True</property>
@@ -1293,7 +1298,37 @@
                       </packing>
                     </child>
                     <child>
-                      <placeholder/>
+                      <object class="GtkRadioButton" id="vorschau_phase">
+                        <property name="label" translatable="yes">Phase</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">False</property>
+                        <property name="use_action_appearance">False</property>
+                        <property name="draw_indicator">True</property>
+                      </object>
+                      <packing>
+                        <property name="expand">True</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkSpinButton" id="vorschau_pixel2">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="invisible_char">•</property>
+                        <property name="primary_icon_activatable">False</property>
+                        <property name="secondary_icon_activatable">False</property>
+                        <property name="primary_icon_sensitive">True</property>
+                        <property name="secondary_icon_sensitive">True</property>
+                        <property name="adjustment">pixel2</property>
+                        <signal name="value-changed" handler="vorschau" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="expand">True</property>
+                        <property name="fill">True</property>
+                        <property name="position">2</property>
+                      </packing>
                     </child>
                   </object>
                   <packing>
@@ -1303,7 +1338,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkHBox" id="be_vorschau">
+                  <object class="GtkHBox" id="vorschau">
                     <property name="width_request">500</property>
                     <property name="height_request">500</property>
                     <property name="visible">True</property>
@@ -1339,7 +1374,19 @@
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <child>
-              <placeholder/>
+              <object class="GtkCheckButton" id="speichern">
+                <property name="label" translatable="yes">Spektren abspeichern</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">False</property>
+                <property name="use_action_appearance">False</property>
+                <property name="draw_indicator">True</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
             </child>
             <child>
               <object class="GtkButton" id="button4">
@@ -1348,7 +1395,7 @@
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_action_appearance">False</property>
-                <signal name="clicked" handler="be_fit_starten" swapped="no"/>
+                <signal name="clicked" handler="fit_starten" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -1358,8 +1405,8 @@
             </child>
           </object>
           <packing>
-            <property name="expand">True</property>
-            <property name="fill">True</property>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
             <property name="position">2</property>
           </packing>
         </child>
@@ -1368,12 +1415,15 @@
   </object>
   <object class="GtkListStore" id="liststore1">
     <columns>
-      <!-- column-name Standard -->
+      <!-- column-name amp_methode -->
       <column type="gchararray"/>
     </columns>
     <data>
       <row>
-        <col id="0">Standard</col>
+        <col id="0">Lorentzverteilung für Cantilever</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">Für antreibendes System</col>
       </row>
     </data>
   </object>
@@ -1396,5 +1446,10 @@
         <col id="0" translatable="yes">Keine Phase</col>
       </row>
     </data>
+  </object>
+  <object class="GtkAdjustment" id="pixel2">
+    <property name="upper">1</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">10</property>
   </object>
 </interface>

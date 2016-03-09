@@ -6,19 +6,20 @@
 from os import path
 import gtk
 import numpy
-# noinspection PyUnresolvedReferences
 from gwy import Container
 from ConfigParser import ConfigParser
 
 from SpeckView.Plotter import Plotter
 from SpeckView import Format
 
-from Ergebnis import amp_verlauf
+from Ergebnis import amp_verlauf, phase_verlauf
 from Fit import Fit
 from TDMS import TDMS
+from Kompendium import Kompendium
 from Konfiguration import Konfiguration
 from Konstant import *
 from Parameter import *
+import Spektrum
 
 
 class Laden(gtk.Builder):
@@ -38,10 +39,11 @@ class Laden(gtk.Builder):
         """ :type: numpy.multiarray.ndarray """
 
         self.pfad = path.dirname(konfig_datei)
-        self.add_from_file(glade)
+        self.glade = glade
+        self.add_from_file(glade + '/laden.glade')
         self.connect_signals({
-            'be_ende': gtk.main_quit,
-            'be_fit_starten': self.fit_starten,
+            'ende': gtk.main_quit,
+            'fit_starten': self.fit_starten,
             'abbrechen': lambda *args: Fit.stopp(),
             'vorschau': self.vorschau
         })
@@ -59,26 +61,26 @@ class Laden(gtk.Builder):
 
         konf = Konfiguration()
         self.konf = konf
-        self.pixel = self.spinbox('be_pixel')
+        self.pixel = self.spinbutton('pixel')
         self.pixel.set_value(parser.getint(konf.konfig, konf.pixel))
-        self.dim = self.spinbox('be_dim')
+        self.dim = self.spinbutton('dim')
         self.dim.set_value(parser.getfloat(konf.konfig, konf.dim))
 
-        self.df = self.spinbox('be_df')
+        self.df = self.spinbutton('df')
         self.df.set_value(parser.getfloat(konf.konfig, konf.df))
-        self.mittelungen = self.spinbox('be_mittelungen')
+        self.mittelungen = self.spinbutton('mittelungen')
         self.mittelungen.set_value(parser.getint(konf.konfig, konf.mittelungen))
-        self.fmin = self.spinbox('be_fmin')
+        self.fmin = self.spinbutton('fmin')
         self.fmin.set_value(parser.getint(konf.konfig, konf.fmin))
-        self.fmax = self.spinbox('be_fmax')
+        self.fmax = self.spinbutton('fmax')
         self.fmax.set_value(parser.getint(konf.konfig, konf.fmax))
 
         self.plotter = Plotter("Frequenz (Hz)", "Amplitude (V)")
-        self.get_object('be_vorschau').add(self.plotter)
+        self.get_object('vorschau').add(self.plotter)
         self.ui.show_all()
         gtk.main()
 
-    def spinbox(self, name):
+    def spinbutton(self, name):
         """
         :type name: str
         :rtype: gtk.SpinButton
@@ -92,21 +94,35 @@ class Laden(gtk.Builder):
         """
         return self.get_object(name)
 
-    def vorschau(self, box):
+    def radiobutton(self, name):
         """
-        :type box: gtk.SpinButton
+        :type name: str
+        :rtype: gtk.RadioButton
         """
-        n = box.get_value()
+        return self.get_object(name)
+
+    def vorschau(self, _):
+        n = self.spinbutton('vorschau_pixel2').get_value()
         par = self.fitparameter()
         frequenz = frequenzen(par)
         if self.amplitude is None:
             self.messwerte_lesen(par)
-        fit = Fit(par, self.amplitude, self.phase, self.fortschritt.pulse)
-        erg = fit.vorschau(n)
-        self.plotter.leeren()
-        self.plotter.plot(frequenzen_voll(par), self.amplitude[n])
-        self.plotter.plot(frequenz, amp_verlauf(par, erg))
-        self.plotter.draw()
+        erg = Fit(par, self.amplitude, self.phase, self.fortschritt.pulse).vorschau(n)
+
+        def plot(messung, fit):
+            """
+            :param messung: list
+            :param fit: list
+            """
+            self.plotter.leeren()
+            self.plotter.plot(frequenzen_voll(par), messung)
+            self.plotter.plot(frequenz, fit, linewidth=2)
+            self.plotter.draw()
+
+        if self.radiobutton('vorschau_amp').get_active():
+            plot(self.amplitude[n], amp_verlauf(par, erg))
+        else:  # if self.radiobutton('vorschau_phase').get_active():
+            plot(self.phase[n], phase_verlauf(par, erg))
 
     def fitparameter(self):
         """
@@ -119,8 +135,8 @@ class Laden(gtk.Builder):
         bereich_links = 0
         bereich_rechts = 0
 
-        # self.spinbox('be_savgol_koeff').get_value()
-        # self.spinbox('be_savgol_ordnung').get_value()
+        # self.spinbox('savgol_koeff').get_value()
+        # self.spinbox('savgol_ordnung').get_value()
         return Parameter(
             fmin=fmin,
             fmax=fmax,
@@ -128,26 +144,26 @@ class Laden(gtk.Builder):
             pixel=self.pixel.get_value_as_int(),
             dim=self.dim.get_value(),
             mittelungen=self.mittelungen.get_value_as_int(),
-            amp_fitfkt=0,  # TODO
-            ph_fitfkt=self.combobox('be_methode_phase').get_active(),
-            filter_breite=self.spinbox('be_savgol_koeff').get_value_as_int(),
-            filter_ordnung=self.spinbox('be_savgol_ordnung').get_value_as_int(),
+            amp_fitfkt=self.combobox('methode_amp').get_active(),
+            ph_fitfkt=self.combobox('methode_phase').get_active(),
+            filter_breite=self.spinbutton('savgol_koeff').get_value_as_int(),
+            filter_ordnung=self.spinbutton('savgol_ordnung').get_value_as_int(),
             phase_versatz=50,  # TODO und eigene Fitparameter für Phase!
             bereich_links=bereich_links,
             bereich_rechts=bereich_rechts,
             amp=Fitparameter(
-                guete_min=self.spinbox('be_q_min').get_value(),
-                guete_max=self.spinbox('be_q_max').get_value(),
-                off_min=self.spinbox('be_off_min').get_value(),
-                off_max=self.spinbox('be_off_max').get_value()
+                guete_min=self.spinbutton('q_min').get_value(),
+                guete_max=self.spinbutton('q_max').get_value(),
+                off_min=self.spinbutton('off_min').get_value(),
+                off_max=self.spinbutton('off_max').get_value()
             ),
-            amp_min=self.spinbox('be_amp_min').get_value(),
-            amp_max=self.spinbox('be_amp_max').get_value(),
+            amp_min=self.spinbutton('amp_min').get_value(),
+            amp_max=self.spinbutton('amp_max').get_value(),
             phase=Fitparameter(
-                guete_min=self.spinbox('be_phase_q_min').get_value(),
-                guete_max=self.spinbox('be_phase_q_max').get_value(),
-                off_min=self.spinbox('be_phase_off_min').get_value(),
-                off_max=self.spinbox('be_phase_off_max').get_value()
+                guete_min=self.spinbutton('phase_q_min').get_value(),
+                guete_max=self.spinbutton('phase_q_max').get_value(),
+                off_min=self.spinbutton('phase_off_min').get_value(),
+                off_max=self.spinbutton('phase_off_max').get_value()
             ),
             konf=self.konf,
             pfad=self.pfad
@@ -162,7 +178,7 @@ class Laden(gtk.Builder):
         self.amplitude = tdms.messwerte_lesen(self.konf.amp)
         if par.nr_fkt_ph is not None:
             self.phase = tdms.messwerte_lesen(self.konf.phase)
-        self.get_object('be_pixel2').set_upper(self.pixel.get_value() ** 2)
+        self.get_object('pixel2').set_upper(self.pixel.get_value() ** 2)
 
     def fit_starten(self, _):
         par = self.fitparameter()
@@ -200,13 +216,25 @@ class Laden(gtk.Builder):
         anlegen([n.amp for n in erg], "Amplitude (a.u.)", "a.u.")
         anlegen([n.phase for n in erg], "Phase (°)", "°")
         anlegen([n.resfreq for n in erg], "Resonanzfrequenz (Hz)", "Hz")
-        anlegen([n.guete for n in erg], u"Güte", "")
+        anlegen([n.guete_amp for n in erg], u"Güte (Amplitudenfit)", "")
+        anlegen([n.guete_ph for n in erg], u"Güte (Phasenfit)", "")
         anlegen([n.untergrund for n in erg], "Untergrund (a.u.)", "a.u.")
+        anlegen([n.phase_rel for n in erg], "Phasenversatz (°)", "°")
 
-        Format.set_custom(self.container, ERGEBNIS, erg)
-        Format.set_custom(self.container, PARAMETER, par)
-        Format.set_custom(self.container, AMPLITUDE, self.amplitude)
-        Format.set_custom(self.container, PHASE, self.phase)
+        speichern = self.get_object('speichern')
+        """ :type: gtk.CheckButton """
+        if speichern.get_active():
+            Format.set_custom(self.container, ERGEBNIS, erg)
+            Format.set_custom(self.container, PARAMETER, par)
+            Format.set_custom(self.container, AMPLITUDE, self.amplitude)
+            Format.set_custom(self.container, PHASE, self.phase)
+        else:
+            Spektrum.Parallel(self.glade, self.container, Kompendium(
+                erg=erg,
+                par=par,
+                amplitude=self.amplitude,
+                phase=self.phase
+            )).start()
 
         self.ff.hide_all()
         gtk.main_quit()

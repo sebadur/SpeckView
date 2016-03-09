@@ -97,7 +97,7 @@ _par = None
 _mod_amp = None
 """ :type: Model """
 _mod_ph = None
-""" :type: None """
+""" :type: Model """
 
 
 def _bereich(feld):
@@ -154,9 +154,8 @@ def _fit_punkt(n):
     if _mod_ph is None:
         return Ergebnis(
             amp=amp.best_values['amp'],
-            phase=0,
             resfreq=amp.best_values['resfreq'],
-            guete=amp.best_values['guete'],
+            guete_amp=amp.best_values['guete'],
             untergrund=amp.best_values['untergrund']
         )
 
@@ -189,7 +188,7 @@ def _fit_punkt(n):
     par_ph = Parameters()
     par_ph.add('resfreq', value=resfreq, min=von, max=bis)
     par_ph.add('guete', value=3, min=_par.phase.guete_min, max=_par.phase.guete_max)
-    par_ph.add('phase', value=200, min=_par.phase.off_min, max=_par.phase.off_max)
+    par_ph.add('rel', value=200, min=_par.phase.off_min, max=_par.phase.off_max)
 
     ph = _mod_ph.fit(
         data=wahl_phase,
@@ -209,8 +208,10 @@ def _fit_punkt(n):
 
     return Ergebnis(
         amp=amp.best_values['amp'],
-        phase=phase,
         resfreq=amp.best_values['resfreq'],
-        guete=amp.best_values['guete'],
-        untergrund=amp.best_values['untergrund']
+        guete_amp=amp.best_values['guete'],
+        untergrund=amp.best_values['untergrund'],
+        phase=phase,
+        guete_ph=ph.best_values['guete'],
+        phase_rel=ph.best_values['rel']
     )
