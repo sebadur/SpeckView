@@ -13,6 +13,7 @@ from os import SEEK_END
 
 SPECKVIEW = '/speckview/'
 BYTE = '/byte'
+PERM = '/perm'
 
 
 def volume_data(c, inhalt, einheit_xy, einheit_z,
@@ -65,11 +66,15 @@ def si_unit(einheit):
     return si
 
 
-def set_custom(c, name, objekt):
+def set_custom(c, name, objekt, permanent=True):
     """
     :type c: gwy.Container
     :type name: str
     :type objekt: object
+    :var permanent: Wenn wahr, dann bleibt das Objekt im Gwyddion-Container enthalten. Das kann sehr speicherintensiv
+    sein. Deshalb kann es sinnvoll sein, diesen Parameter auf falsch zu setzen, wodurch das Objekt durch den ersten
+    Aufruf von get_custom(c, name) aus dem Container gelöscht wird.
+    :type permanent: bool
     """
     ser = StringIO()
     cPickle.dump(objekt, ser, cPickle.HIGHEST_PROTOCOL)
@@ -84,10 +89,13 @@ def set_custom(c, name, objekt):
     c.set_object_by_name(SPECKVIEW + name, go)
     c.set_int32_by_name(SPECKVIEW + name + BYTE, byte)
     c.set_boolean_by_name(SPECKVIEW + name + '/visible', False)
+    c.set_boolean_by_name(SPECKVIEW + name + PERM, permanent)
 
 
 def get_custom(c, name):
     """
+    Gibt das SpeckView-Objekt mit dem gegebenen Namen. Dieses musste zuvor mit set_custom(c, name, objekt, permanent)
+    überwiesen werden. War permanent = falsch, dann wird das Objekt zusätzlich aus dem Container gelöscht.
     :type c: gwy.Container
     :type name: str
     :rtype: object
@@ -99,6 +107,10 @@ def get_custom(c, name):
     zgr = c_feld.from_address(go.get_data_pointer())
     ser = StringIO(zgr)
 
+    if not c.get_boolean_by_name(SPECKVIEW + name + PERM):  # Also löschen:
+        c.remove_by_name(SPECKVIEW + name)
+
     return cPickle.load(ser)
+
 
 # wnd = gwy_app_find_window_for_channel(gwy_app_data_browser_get_containers()[0],-1).get_window()

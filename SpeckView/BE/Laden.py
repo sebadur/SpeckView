@@ -15,11 +15,9 @@ from SpeckView import Format
 from Ergebnis import amp_verlauf, phase_verlauf
 from Fit import Fit
 from TDMS import TDMS
-from Kompendium import Kompendium
 from Konfiguration import Konfiguration
 from Konstant import *
 from Parameter import *
-import Spektrum
 
 
 class Laden(gtk.Builder):
@@ -57,6 +55,8 @@ class Laden(gtk.Builder):
         """ :type: gtk.Window """
 
         parser = ConfigParser()
+        # Komma und Punkt als Dezimaltrennzeichen erlauben (keine Tausendertrennzeichen):
+        parser.getfloat = lambda s, o: float(parser.get(s, o).replace(',', '.'))
         parser.read(konfig_datei)
 
         konf = Konfiguration()
@@ -223,18 +223,12 @@ class Laden(gtk.Builder):
 
         speichern = self.get_object('speichern')
         """ :type: gtk.CheckButton """
-        if speichern.get_active():
-            Format.set_custom(self.container, ERGEBNIS, erg)
-            Format.set_custom(self.container, PARAMETER, par)
-            Format.set_custom(self.container, AMPLITUDE, self.amplitude)
-            Format.set_custom(self.container, PHASE, self.phase)
-        else:
-            Spektrum.Parallel(self.glade, self.container, Kompendium(
-                erg=erg,
-                par=par,
-                amplitude=self.amplitude,
-                phase=self.phase
-            )).start()
+        permanent = speichern.get_active()
+
+        Format.set_custom(self.container, ERGEBNIS, erg, permanent)
+        Format.set_custom(self.container, PARAMETER, par, permanent)
+        Format.set_custom(self.container, AMPLITUDE, self.amplitude, permanent)
+        Format.set_custom(self.container, PHASE, self.phase, permanent)
 
         self.ff.hide_all()
         gtk.main_quit()

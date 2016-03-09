@@ -1375,7 +1375,7 @@
             <property name="can_focus">False</property>
             <child>
               <object class="GtkCheckButton" id="speichern">
-                <property name="label" translatable="yes">Spektren abspeichern</property>
+                <property name="label" translatable="yes">Spektren nach Darstellung behalten</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">False</property>

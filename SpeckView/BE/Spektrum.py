@@ -4,7 +4,7 @@
 """
 
 import gtk
-from threading import Thread
+from sys import stderr
 
 from SpeckView.Plotter import Plotter
 from SpeckView import Format
@@ -14,32 +14,15 @@ from Konstant import *
 from Parameter import frequenzen, frequenzen_voll
 
 
-class Parallel(Thread):
-    def __init__(self, glade, c, komp):
-        """
-        :type glade: str
-        :type c: gwy.Container.Container
-        :type komp: SpeckView.BE.Kompendium.Kompendium
-        """
-        Thread.__init__(self)
-        self.glade = glade
-        self.c = c
-        self.komp = komp
-
-    def run(self):
-        Spektrum(self.glade, self.c, self.komp)
-
-
 class Spektrum(gtk.Builder):
-    def __init__(self, glade, c, komp=None):
+    def __init__(self, glade, c):
         """
         :type glade: str
         :type c: gwy.Container.Container
-        :type komp: SpeckView.BE.Kompendium.Kompendium
         """
         gtk.Builder.__init__(self)
 
-        if komp is None:
+        try:
             self.erg = Format.get_custom(c, ERGEBNIS)
             """ :type: list[SpeckView.BE.Ergebnis.Ergebnis] """
             self.par = Format.get_custom(c, PARAMETER)
@@ -48,11 +31,11 @@ class Spektrum(gtk.Builder):
             """ :type: list """
             self.phase = Format.get_custom(c, PHASE)
             """ :type: list """
-        else:
-            self.erg = komp.erg
-            self.par = komp.par
-            self.amplitude = komp.amplitude
-            self.phase = komp.phase
+        except:
+            stderr.write("Es sind keine Spektroskopiedaten vorhanden.")
+            # TODO Messdaten ad-hoc einlesen, dafür aber Ergebnisse zwangsweise speichern (längere Ladezeit zur Anzeige der Spektren, aber weniger Speicherverbrauch).
+            # TODO Womöglich sogar nur die nötige Zeile einlesen...
+            return
 
         self.add_from_file(glade + 'spektrum.glade')
 
