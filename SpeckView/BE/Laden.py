@@ -116,7 +116,8 @@ class Laden(gtk.Builder):
             """
             self.plotter.leeren()
             self.plotter.plot(frequenzen_voll(par), messung)
-            self.plotter.plot(frequenz, fit, linewidth=2)
+            if fit is not None:
+                self.plotter.plot(frequenz, fit, linewidth=2)
             self.plotter.draw()
 
         if self.radiobutton('vorschau_amp').get_active():
@@ -148,7 +149,7 @@ class Laden(gtk.Builder):
             ph_fitfkt=self.combobox('methode_phase').get_active(),
             filter_breite=self.spinbutton('savgol_koeff').get_value_as_int(),
             filter_ordnung=self.spinbutton('savgol_ordnung').get_value_as_int(),
-            phase_versatz=50,  # TODO und eigene Fitparameter für Phase!
+            phase_versatz=self.spinbutton('phase_versatz').get_value(),
             bereich_links=bereich_links,
             bereich_rechts=bereich_rechts,
             amp=Fitparameter(
@@ -221,14 +222,9 @@ class Laden(gtk.Builder):
         anlegen([n.untergrund for n in erg], "Untergrund (a.u.)", "a.u.")
         anlegen([n.phase_rel for n in erg], "Phasenversatz (°)", "°")
 
-        speichern = self.get_object('speichern')
-        """ :type: gtk.CheckButton """
-        permanent = speichern.get_active()
-
-        Format.set_custom(self.container, ERGEBNIS, erg, permanent)
-        Format.set_custom(self.container, PARAMETER, par, permanent)
-        Format.set_custom(self.container, AMPLITUDE, self.amplitude, permanent)
-        Format.set_custom(self.container, PHASE, self.phase, permanent)
+        Format.set_custom(self.container, KONFIG, self.konf)
+        Format.set_custom(self.container, ERGEBNIS, erg)
+        Format.set_custom(self.container, PARAMETER, par)
 
         self.ff.hide_all()
         gtk.main_quit()

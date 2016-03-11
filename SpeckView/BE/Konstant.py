@@ -3,7 +3,6 @@
 @author: Sebastian Badur
 """
 
-AMPLITUDE = 'ber-amplitude'
-PHASE = 'ber-phase'
+KONFIG = 'ber-konf'
 ERGEBNIS = 'ber-ergebnis'
 PARAMETER = 'ber-parameter'

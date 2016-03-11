@@ -92,9 +92,13 @@ def phase_phenom(freq, resfreq, guete, rel):
     ) + rel) % 360 - 180
 
 
+KEIN_FIT = 0
+GLAETTEN = 1
+
 fkt_ph = [
     phase_lorentz,
     phase_aghr,
     phase_phenom,
-    None
+    GLAETTEN,
+    KEIN_FIT
 ]

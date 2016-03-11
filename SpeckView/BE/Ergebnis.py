@@ -48,7 +48,7 @@ def phase_verlauf(par, erg):
     :rtype: list[float]
     """
     fkt = fkt_ph[par.nr_fkt_ph]
-    if fkt is None:
+    if type(fkt) is int:
         return None
     else:
         return [

@@ -24,6 +24,7 @@ class Plotter(gtk.VBox):
         """ :type: matplotlib.axes.Axes """
         self.axes.hold(False)
         self.canvas = FigureCanvas(figure)
+        #self.canvas.mpl_connect('button_press_event', self.klick)
         nav = NavigationToolbar(self.canvas, self)
         self.pack_start(nav, False, False)
         self.pack_start(self.canvas)
@@ -37,3 +38,10 @@ class Plotter(gtk.VBox):
 
     def draw(self):
         self.canvas.draw()
+
+    """def klick(self, evt):
+        ""
+        :type evt: matplotlib.backend_bases.MouseEvent
+        ""
+        self.axes.plot([evt.xdata, evt.xdata], [-100, 100])  # TODO!!
+        self.canvas.draw()"""

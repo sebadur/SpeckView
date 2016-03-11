@@ -12,7 +12,7 @@ from multiprocessing import Pool
 from SpeckView.Sonstige import int_max
 
 from Ergebnis import Ergebnis
-from FitFunktion import fkt_amp, fkt_ph
+from FitFunktion import fkt_amp, fkt_ph, KEIN_FIT, GLAETTEN
 from Parameter import index_freq, frequenzen
 
 
@@ -40,11 +40,10 @@ class Fit:
             _phase_voll = self.phase_voll
             _frequenz = self.frequenz
             _mod_amp = Model(fkt_amp[self.par.nr_fkt_amp])
-            fp = fkt_ph[self.par.nr_fkt_ph]
-            if fp is not None:
+            try:
                 _mod_ph = Model(fkt_ph[self.par.nr_fkt_ph])
-            else:
-                _mod_ph = None
+            except TypeError:
+                _mod_ph = fkt_ph[self.par.nr_fkt_ph]
             _puls = self.puls
             _weiter = True
 
@@ -151,7 +150,7 @@ def _fit_punkt(n):
 
     # TODO puls()
     # Wenn keine Phase gefittet werden soll:
-    if _mod_ph is None:
+    if _mod_ph is KEIN_FIT:
         return Ergebnis(
             amp=amp.best_values['amp'],
             resfreq=amp.best_values['resfreq'],
@@ -166,7 +165,8 @@ def _fit_punkt(n):
     # ------------- PHASE fitten -------------
     # ----------------------------------------
 
-    halb = abs(_par.phase_versatz) * _par.df  # Halbe Frequenzbreite des Phasenversatzes
+    halb = abs(_par.phase_versatz) + 10 * _par.df # Halbe Frequenzbreite des Phasenversatzes
+    # +df, weil der Fit auch bei Versatz = 0 funktionieren muss
     von = resfreq - halb  # Untere Versatzgrenze
     bis = resfreq + halb  # Obere Versatzgrenze
 
@@ -178,40 +178,57 @@ def _fit_punkt(n):
         von = max(von - bis + _par.fmax, _par.fmin)  # Verschieben, aber nicht über linken Rand hinaus
         bis = _par.fmax
 
-    # Phase und Frequenz beschneiden
+    # Phase beschneiden
     index_von = index_freq(_par, von)
     index_bis = index_freq(_par, bis)
     wahl_phase = _bereich(_phase_voll[n])[index_von:index_bis]
-    wahl_frequenz = _frequenz[index_von:index_bis]
 
-    # Fitparameter für die Fitfunktion
-    par_ph = Parameters()
-    par_ph.add('resfreq', value=resfreq, min=von, max=bis)
-    par_ph.add('guete', value=3, min=_par.phase.guete_min, max=_par.phase.guete_max)
-    par_ph.add('rel', value=200, min=_par.phase.off_min, max=_par.phase.off_max)
+    if _mod_ph is GLAETTEN:  # Nur glätten:
+        phase = savgol_filter(wahl_phase, _par.filter_breite, _par.filter_ordnung)
+        return Ergebnis(
+            amp=amp.best_values['amp'],
+            resfreq=amp.best_values['resfreq'],
+            guete_amp=amp.best_values['guete'],
+            untergrund=amp.best_values['untergrund'],
+            phase=randwert(phase, _par.phase_versatz),
+            guete_ph=0,
+            phase_rel=0
+        )
 
-    ph = _mod_ph.fit(
-        data=wahl_phase,
-        freq=wahl_frequenz,
-        params=par_ph,
-        method='cg'  # 'differential_evolution' passt auch gut
-        # TODO fit_kws=self.fit_genauigkeit
-    )
-
-    # Zusätzliche Informationen für den Phasenfit:
-    if _par.phase_versatz < 0:
-        phase = ph.best_fit[0]
-    elif _par.phase_versatz > 0:
-        phase = ph.best_fit[-1]
     else:
-        phase = ph.best_fit[len(ph.best_fit) // 2]
+        # Fitparameter für die Fitfunktion
+        par_ph = Parameters()
+        par_ph.add('resfreq', value=resfreq, min=von, max=bis)
+        par_ph.add('guete', value=3, min=_par.phase.guete_min, max=_par.phase.guete_max)
+        par_ph.add('rel', value=200, min=_par.phase.off_min, max=_par.phase.off_max)
 
-    return Ergebnis(
-        amp=amp.best_values['amp'],
-        resfreq=amp.best_values['resfreq'],
-        guete_amp=amp.best_values['guete'],
-        untergrund=amp.best_values['untergrund'],
-        phase=phase,
-        guete_ph=ph.best_values['guete'],
-        phase_rel=ph.best_values['rel']
-    )
+        ph = _mod_ph.fit(
+            data=wahl_phase,
+            freq=_frequenz[index_von:index_bis],
+            params=par_ph,
+            method='cg'  # 'differential_evolution' passt auch gut
+            # TODO fit_kws=self.fit_genauigkeit
+        )
+
+        return Ergebnis(
+            amp=amp.best_values['amp'],
+            resfreq=amp.best_values['resfreq'],
+            guete_amp=amp.best_values['guete'],
+            untergrund=amp.best_values['untergrund'],
+            phase=randwert(ph.best_fit, _par.phase_versatz),
+            guete_ph=ph.best_values['guete'],
+            phase_rel=ph.best_values['rel']
+        )
+
+
+def randwert(phase, versatz):
+    """
+    :type phase: list
+    :type versatz: int
+    """
+    if versatz < 0:
+        return phase[0]
+    elif _par.phase_versatz > 0:
+        return phase[-1]
+    else:
+        return phase[len(phase) // 2]

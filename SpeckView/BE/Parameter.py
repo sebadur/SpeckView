@@ -25,8 +25,8 @@ class Parameter:
         :type ph_fitfkt: int
         :type filter_breite: int
         :type filter_ordnung: int
-        :param phase_versatz: Die zur Resonanz gehörige Phase wird diese Anzahl an Messpunkten neben der
-        Resonanzfrequenz aus der geglätteten Phasenmessung entnommen.
+        :param phase_versatz: Die zur Resonanz gehörige Phase wird diesen Frequenzversatz neben der Resonanzfrequenz aus
+        der geglätteten Phasenmessung entnommen.
         :type phase_versatz: int
         :param bereich_links: Die Anzahl der zu entfernenden niedrigen Frequenzen
         :type bereich_links: int
@@ -74,7 +74,7 @@ class Parameter:
         self.filter_ordnung = filter_ordnung
         """ Ordnung des Filterpolynoms """
         self.phase_versatz = phase_versatz
-        """ Die Phase wird diese Anzahl an Messpunkten neben der Resonanzfrequenz der Phasenauswertung entnommen """
+        """ Die Phase wird diesen Versatz in Hz neben der Resonanzfrequenz der Phasenauswertung entnommen """
         self.bereich_links = bereich_links
         """ Linker Rand für Fitbereich """
         self.bereich_rechts = bereich_rechts
