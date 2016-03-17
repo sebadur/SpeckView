@@ -9,7 +9,7 @@ from sys import stderr
 from SpeckView.Plotter import Plotter
 from SpeckView import Format
 
-from Ergebnis import amp_verlauf
+from Ergebnis import amp_verlauf, phase_verlauf
 from Konstant import *
 from Parameter import frequenzen, frequenzen_voll
 from TDMS import TDMS
@@ -80,6 +80,10 @@ class Spektrum(gtk.Builder):
     def aktualisieren(self, _):
         n = self.n()
         self.plotter.leeren()
-        self.plotter.plot(frequenzen_voll(self.par), self.amplitude[n])
-        self.plotter.plot(frequenzen(self.par), amp_verlauf(self.par, self.erg[n]))
+        if self.get_object('amplitude').get_active():
+            self.plotter.plot(frequenzen_voll(self.par), self.amplitude[n])
+            self.plotter.plot(frequenzen(self.par), amp_verlauf(self.par, self.erg[n]))
+        else:
+            self.plotter.plot(frequenzen_voll(self.par), self.phase[n])
+            self.plotter.plot(frequenzen(self.par), phase_verlauf(self.par, self.erg[n]))
         self.plotter.draw()

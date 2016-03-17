@@ -55,7 +55,13 @@ def load(dateiname, modus=None):
 
         from SpeckView.BE.Laden import Laden
         geladen = Laden(home + '/.gwyddion/pygwy/SpeckView/BE/', dateiname)
-        return geladen.container
+
+        # TODO Test: Befreien der reservierten Resourcen (Gwyddion-Bug?)
+        container = geladen.container
+        geladen = None
+        home = None
+
+        return container
 
     else:
         # TODO VORSCHAU:
