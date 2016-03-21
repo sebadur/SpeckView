@@ -1,9 +1,13 @@
 [konfig]
-format = BE Raster
-fmin = 230000
-fmax = 246000
-df = 10.000000
+format = "BE Raster"
+fmin = 50000
+fmax = 90000
+df = 20,000000
 mittelungen = 1
-dim = 0.0001
-pixel = 128
-datum = "01.02.2016 13:19:36"
+piezofaktor = 0,000000
+nulldurchgang = 0,013209
+datum = "16-03-15-13-24-12"
+dc = 2,000000
+ac = 2,000000
+pixel = 100
+dim = 0,000007
