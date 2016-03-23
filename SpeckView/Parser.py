@@ -6,7 +6,7 @@
 from ConfigParser import ConfigParser, NoOptionError
 
 
-class Parser(ConfigParser):
+class DefaultParser(ConfigParser):
     def __init__(self):
         ConfigParser.__init__(self)
 

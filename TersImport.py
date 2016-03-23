@@ -7,15 +7,17 @@ plugin_desc = "Importing Ters-Files (.ters)"
 
 
 def detect_by_name(filename):
-    if (filename.endswith(".ters")):
+    if filename.endswith(".ters"):
         return 100
     else:
         return 0
 
 
 def detect_by_content(filename, head, tail, filesize):
-    return 0
-    return 100
+    if filename.endswith(".ters"):
+        return 100
+    else:
+        return 0
 
 
 def load(filename, mode=None):

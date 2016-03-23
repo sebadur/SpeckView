@@ -7,16 +7,15 @@ import gtk
 import numpy
 from gwy import Container
 
-from SpeckView.Plotter import Plotter
-from SpeckView import Format
-
 from Ergebnis import amp_verlauf, phase_verlauf
 from Fit import Fit
-from TDMS import TDMS
 from Konfiguration import Konfiguration
 from Konstant import *
 from Parameter import *
 from Parser import Parser
+from SpeckView import Format
+from SpeckView.Plotter import Plotter
+from TDMS import TDMS
 
 
 class Laden(gtk.Builder):
