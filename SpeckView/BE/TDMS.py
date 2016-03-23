@@ -27,13 +27,13 @@ class TDMS:
         _par = self.par
         _typ = typ
 
-        if self.konf == 2:
+        if self.konf.format == 2:
             #  Komplettes Raster in einer Datei
             return _lade_tdms(
                 tdms=TdmsFile(_par.konf.datei.rsplit('.ber', 1)[0] + '.tdms').object(_par.konf.gruppe, typ)
             )
         else:
-            if self.konf == 1:
+            if self.konf.format == 1:
                 start = 1
             else:
                 start = 0
