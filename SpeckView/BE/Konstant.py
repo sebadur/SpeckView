@@ -3,6 +3,5 @@
 @author: Sebastian Badur
 """
 
-KONFIG = 'ber-konf'
 ERGEBNIS = 'ber-ergebnis'
 PARAMETER = 'ber-parameter'

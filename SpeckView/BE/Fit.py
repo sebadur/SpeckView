@@ -107,7 +107,7 @@ def _bereich(feld):
     if _par.bereich_rechts == 0:
         return feld[_par.bereich_links:]
     else:
-        return feld[_par.bereich_links:-_par.bereich_rechts]
+        return feld[_par.bereich_links:_par.bereich_rechts]
 
 
 def _fit_punkt(n):

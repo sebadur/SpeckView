@@ -11,7 +11,7 @@ from SpeckView.Sonstige import Fehler
 class Parameter:
     """ Alle für den Fit einer Rastermessung nötigen Messparameter """
     def __init__(self, fmin, fmax, df, pixel, dim, mittelungen, amp_fitfkt, ph_fitfkt, filter_breite, filter_ordnung,
-                 phase_versatz, bereich_links, bereich_rechts, amp, amp_min, amp_max, phase, konf, pfad):
+                 phase_versatz, bereich_min, bereich_max, amp, amp_min, amp_max, phase, konf):
         """
         :type fmin: int
         :type fmax: int
@@ -28,16 +28,13 @@ class Parameter:
         :param phase_versatz: Die zur Resonanz gehörige Phase wird diesen Frequenzversatz neben der Resonanzfrequenz aus
         der geglätteten Phasenmessung entnommen.
         :type phase_versatz: int
-        :param bereich_links: Die Anzahl der zu entfernenden niedrigen Frequenzen
-        :type bereich_links: int
-        :param bereich_rechts: Die Anzahl der zu entfernenden hohen Frequenzen
-        :type bereich_rechts: int
+        :type bereich_min: float
+        :type bereich_max: float
         :type amp: Fitparameter
         :type amp_min: float
         :type amp_max: float
         :type phase: Fitparameter
         :type konf: SpeckView.BE.Konfiguration.Konfiguration
-        :type pfad: str
         """
         if fmin >= fmax or amp_min >= amp_max:
             raise Fehler()
@@ -53,11 +50,11 @@ class Parameter:
 
         self.fmin_voll = fmin
         """ Anfangsfrequenz des vollen Bereichs der aufgenommenen Bandanregung """
-        self.fmin = fmin + bereich_links * df
+        self.fmin = bereich_min
         """ Anfangsfrequenz des Spektrums der Bandanregung im gewählten Frequenzbereich in Hz """
         self.fmax_voll = fmax
         """ Endfrequenz des vollen Messbereichs der Bandanregung """
-        self.fmax = fmax - bereich_rechts * df
+        self.fmax = bereich_max
         """ Endfrequenz des Spektrums der Bandanregung im gewählten Frequenzbereich in Hz """
         self.pixel = pixel
         """ Pixelgröße des (quadratischen) Messbereichs """
@@ -75,20 +72,19 @@ class Parameter:
         """ Ordnung des Filterpolynoms """
         self.phase_versatz = phase_versatz
         """ Die Phase wird diesen Versatz in Hz neben der Resonanzfrequenz der Phasenauswertung entnommen """
-        self.bereich_links = bereich_links
-        """ Linker Rand für Fitbereich """
-        self.bereich_rechts = bereich_rechts
-        """ Rechter Rand des Fitbereichs """
 
         self.konf = konf
         """ Konfigurationseinstellungen """
-        self.pfad = pfad
-        """ Stammverzeichnis der Messdateien """
 
         self.df = df
         """ Abstand der Messwerte auf der Frequenzskala in Hz """
         self.messpunkte = int((fmax - fmin) // df)
         """ Anzahl der Messpunkte bezüglich der Freqzenz """
+
+        self.bereich_links = int((bereich_min - fmin) // df)
+        """ Linker Rand in Messpunkten für Fitbereich """
+        self.bereich_rechts = int((bereich_max - fmax) // df)
+        """ Rechter Rand in Messpunkten des Fitbereichs (negativ) """
 
 
 def index_freq(par, freq):

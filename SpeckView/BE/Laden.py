@@ -3,7 +3,6 @@
 @author: Sebastian Badur
 """
 
-from os import path
 import gtk
 import numpy
 from gwy import Container
@@ -36,31 +35,32 @@ class Laden(gtk.Builder):
         self.phase = None
         """ :type: numpy.multiarray.ndarray """
 
-        self.pfad = path.dirname(konfig_datei)
         self.glade = glade
         self.add_from_file(glade + '/laden.glade')
+
+        self.ui = self.window('fenster_laden')
+        self.ff = self.window('fenster_fortschritt')
+        self.fk = self.window('fenster_konfig')
+
         self.connect_signals({
             'ende': gtk.main_quit,
             'fit_starten': self.fit_starten,
-            'abbrechen': lambda *args: Fit.stopp(),
+            'konfig': lambda _: self.fk.show_all(),
+            'abbrechen': lambda _: Fit.stopp(),
             'vorschau': self.vorschau
         })
 
-        self.ff = self.get_object('fenster_fortschritt')
-        """ :type: gtk.Window """
         self.fortschritt = self.get_object('fortschritt')
         """ :type: gtk.ProgressBar """
-
-        self.ui = self.get_object('fenster_laden')
-        """ :type: gtk.Window """
 
         parser = ConfigParser()
         # Komma und Punkt als Dezimaltrennzeichen erlauben (keine Tausendertrennzeichen):
         parser.getfloat = lambda s, o: float(parser.get(s, o).replace(',', '.'))
         parser.read(konfig_datei)
 
-        konf = Konfiguration()
+        konf = Konfiguration(konfig_datei)
         self.konf = konf
+
         self.pixel = self.spinbutton('pixel')
         self.pixel.set_value(parser.getint(konf.konfig, konf.pixel))
         self.dim = self.spinbutton('dim')
@@ -71,35 +71,20 @@ class Laden(gtk.Builder):
         self.mittelungen = self.spinbutton('mittelungen')
         self.mittelungen.set_value(parser.getint(konf.konfig, konf.mittelungen))
         self.fmin = self.spinbutton('fmin')
-        self.fmin.set_value(parser.getint(konf.konfig, konf.fmin))
+        self.bereich_min = self.spinbutton('bereich_min')
+        fmin = parser.getint(konf.konfig, konf.fmin)
+        self.fmin.set_value(fmin)
+        self.bereich_min.set_value(fmin)
         self.fmax = self.spinbutton('fmax')
-        self.fmax.set_value(parser.getint(konf.konfig, konf.fmax))
+        self.bereich_max = self.spinbutton('bereich_max')
+        fmax = parser.getint(konf.konfig, konf.fmax)
+        self.fmax.set_value(fmax)
+        self.bereich_max.set_value(fmax)
 
         self.plotter = Plotter("Frequenz (Hz)", "Amplitude (V)")
         self.get_object('vorschau').add(self.plotter)
         self.ui.show_all()
         gtk.main()
-
-    def spinbutton(self, name):
-        """
-        :type name: str
-        :rtype: gtk.SpinButton
-        """
-        return self.get_object(name)
-
-    def combobox(self, name):
-        """
-        :type name: str
-        :rtype: gtk.ComboBox
-        """
-        return self.get_object(name)
-
-    def radiobutton(self, name):
-        """
-        :type name: str
-        :rtype: gtk.RadioButton
-        """
-        return self.get_object(name)
 
     def vorschau(self, _):
         n = self.spinbutton('vorschau_pixel2').get_value()
@@ -133,11 +118,6 @@ class Laden(gtk.Builder):
         fmax = self.fmax.get_value()
         df = self.df.get_value()
 
-        bereich_links = 0
-        bereich_rechts = 0
-
-        # self.spinbox('savgol_koeff').get_value()
-        # self.spinbox('savgol_ordnung').get_value()
         return Parameter(
             fmin=fmin,
             fmax=fmax,
@@ -150,8 +130,8 @@ class Laden(gtk.Builder):
             filter_breite=self.spinbutton('savgol_koeff').get_value_as_int(),
             filter_ordnung=self.spinbutton('savgol_ordnung').get_value_as_int(),
             phase_versatz=self.spinbutton('phase_versatz').get_value(),
-            bereich_links=bereich_links,
-            bereich_rechts=bereich_rechts,
+            bereich_min=self.bereich_min.get_value(),
+            bereich_max=self.bereich_max.get_value(),
             amp=Fitparameter(
                 guete_min=self.spinbutton('q_min').get_value(),
                 guete_max=self.spinbutton('q_max').get_value(),
@@ -166,8 +146,7 @@ class Laden(gtk.Builder):
                 off_min=self.spinbutton('phase_off_min').get_value(),
                 off_max=self.spinbutton('phase_off_max').get_value()
             ),
-            konf=self.konf,
-            pfad=self.pfad
+            konf=self.konf
         )
 
     def messwerte_lesen(self, par):
@@ -175,7 +154,7 @@ class Laden(gtk.Builder):
         :type par: Parameter
         :rtype: (numpy.multiarray.ndarray, numpy.multiarray.ndarray)
         """
-        tdms = TDMS(par)
+        tdms = TDMS(par, self.konf)
         self.amplitude = tdms.messwerte_lesen(self.konf.amp)
         if par.nr_fkt_ph is not None:
             self.phase = tdms.messwerte_lesen(self.konf.phase)
@@ -222,9 +201,45 @@ class Laden(gtk.Builder):
         anlegen([n.untergrund for n in erg], "Untergrund (a.u.)", "a.u.")
         anlegen([n.phase_rel for n in erg], "Phasenversatz (°)", "°")
 
-        Format.set_custom(self.container, KONFIG, self.konf)
         Format.set_custom(self.container, ERGEBNIS, erg)
         Format.set_custom(self.container, PARAMETER, par)
 
         self.ff.hide_all()
         gtk.main_quit()
+
+    # Hilfsfunktionen (für Typentreue):
+
+    def window(self, name):
+        """
+        :type name: str
+        :rtype: gtk.Window
+        """
+        return self.get_object(name)
+
+    def spinbutton(self, name):
+        """
+        :type name: str
+        :rtype: gtk.SpinButton
+        """
+        return self.get_object(name)
+
+    def combobox(self, name):
+        """
+        :type name: str
+        :rtype: gtk.ComboBox
+        """
+        return self.get_object(name)
+
+    def radiobutton(self, name):
+        """
+        :type name: str
+        :rtype: gtk.RadioButton
+        """
+        return self.get_object(name)
+
+    def entry(self, name):
+        """
+        :type name: str
+        :rtype: gtk.Entry
+        """
+        return self.get_object(name)

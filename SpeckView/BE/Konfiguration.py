@@ -3,9 +3,18 @@
 @author: Sebastian Badur
 """
 
+from os import path
+
 
 class Konfiguration:
-    def __init__(self):
+    def __init__(self, datei):
+        """
+        :type datei: str
+        """
+        self.datei = datei  # TODO path.relpath(datei)
+        self.pfad = path.dirname(datei)
+
+        self.format = 1
         self.konfig = 'konfig'
         self.df = 'df'
         self.mittelungen = 'mittelungen'

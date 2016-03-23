@@ -28,8 +28,6 @@ class Spektrum(gtk.Builder):
             """ :type: list[SpeckView.BE.Ergebnis.Ergebnis] """
             self.par = Format.get_custom(c, PARAMETER)
             """ :type: SpeckView.BE.Parameter.Parameter """
-            self.konf = Format.get_custom(c, KONFIG)
-            """ :type: SpeckView.BE.Konfiguration.Konfiguration """
 
             self.amplitude = []
             self.phase = []
@@ -65,13 +63,12 @@ class Spektrum(gtk.Builder):
 
     def messwerte_lesen(self):
         """
-        :type par: Parameter.Parameter
         :rtype: (numpy.multiarray.ndarray, numpy.multiarray.ndarray)
         """
-        tdms = TDMS(self.par)
-        self.amplitude = tdms.messwerte_lesen(self.konf.amp)
+        tdms = TDMS(self.par, self.par.konf)
+        self.amplitude = tdms.messwerte_lesen(self.par.konf.amp)
         if self.par.nr_fkt_ph is not None:
-            self.phase = tdms.messwerte_lesen(self.konf.phase)
+            self.phase = tdms.messwerte_lesen(self.par.konf.phase)
         #self.x.set_upper()
 
     def n(self):
