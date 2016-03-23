@@ -15,10 +15,11 @@ class Ergebnis:
         :type amp: float
         :type phase: float
         :type resfreq: float
-        :type guete: float
+        :type guete_amp: float
         :type untergrund: float
         :type resfreq: float
-        :type guete: float
+        :type guete_ph: float
+        :type phase_rel: float
         """
         self.amp = amp
         self.phase = phase

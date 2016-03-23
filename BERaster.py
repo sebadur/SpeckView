@@ -51,30 +51,17 @@ def load(dateiname, modus=None):
     """
     if modus == gwy.RUN_INTERACTIVE:
         # PLUGIN AUSFÜHREN:
-        home = _import()
+        import sys
+        import os
+        home = os.getenv('HOME')
+        if not DEBUG:
+            sys.path.append(home + '/.gwyddion/pygwy/')
 
         from SpeckView.BE.Laden import Laden
         geladen = Laden(home + '/.gwyddion/pygwy/SpeckView/BE/', dateiname)
 
         # TODO Test: Befreien der reservierten Resourcen (Gwyddion-Bug?)
-        container = geladen.container
-        geladen = None
-        home = None
+        return geladen.container
 
-        return container
-
-    else:
-        # TODO VORSCHAU:
+    else:  # Vorschau
         return None
-
-
-def _import():
-    """
-    :rtype: str
-    """
-    import sys
-    import os
-    home = os.getenv('HOME')
-    if not DEBUG:
-        sys.path.append(home + '/.gwyddion/pygwy/')
-    return home

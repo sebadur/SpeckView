@@ -12,7 +12,7 @@ from Fit import Fit
 from Konfiguration import Konfiguration
 from Konstant import *
 from Parameter import *
-from Parser import Parser
+from Parser import DefaultParser
 from SpeckView import Format
 from SpeckView.Plotter import Plotter
 from TDMS import TDMS
@@ -52,7 +52,7 @@ class Laden(gtk.Builder):
         self.fortschritt = self.get_object('fortschritt')
         """ :type: gtk.ProgressBar """
 
-        parser = Parser()
+        parser = DefaultParser()
         parser.read(konfig_datei)
 
         konf = Konfiguration(konfig_datei)
@@ -163,12 +163,13 @@ class Laden(gtk.Builder):
         par = self.fitparameter()
 
         # Fortschrittsanzeige:
-        self.ui.hide_all()
-        self.ff.show_all()
         self.fortschritt.set_value(0)
         self.fortschritt.set_pulse_step(1 / par.pixel)
+        self.ui.hide_all()
+        self.ff.show_all()
         while gtk.events_pending():
             gtk.main_iteration_do(True)
+        pass
 
         # Messwerte einlesen:
         self.messwerte_lesen(par)

@@ -1,0 +1,92 @@
+# coding=utf-8
+"""
+@author: Sebastian Badur
+"""
+
+import unittest
+
+import gwy
+plugin_type = 'PROCESS'
+plugin_desc = "Debugfunktionen"
+plugin_menu = "/SpeckView/BEDebug"
+
+
+def run():
+    pass
+
+
+class DebugTest(unittest.TestCase):
+    def test_name(self):
+        self.assertEqual(BERaster.detect_by_name(messung), 100)
+        for datei in tdms:
+            self.assertEqual(BERaster.detect_by_name(datei), 0)
+
+    def test_inhalt(self):
+        self.assertEqual(BERaster.detect_by_content(messung, "", "", 0), 100)
+        for datei in tdms:
+            self.assertEqual(BERaster.detect_by_content(datei, "", "", 0), 0)
+
+    def test_format(self):
+        from SpeckView import Format
+        from SpeckView.BE.Ergebnis import Ergebnis
+        c = gwy.Container()
+        debug = "debug"
+        original = [Ergebnis(3, 5, 7, 11)]
+        Format.set_custom(c, debug, original)
+        resultat = Format.get_custom(c, debug)
+        """ :type: list[Ergebnis.Ergebnis] """
+        self.assertEqual(len(resultat), len(original))
+        for n in range(len(original)):
+            alt = original[n]
+            neu = resultat[n]
+            self.assertEqual(neu.amp, alt.amp)
+            self.assertEqual(neu.resfreq, alt.resfreq)
+            self.assertEqual(neu.guete_amp, alt.guete_amp)
+            self.assertEqual(neu.untergrund, alt.untergrund)
+
+    def test_fit(self):
+        from SpeckView.BE.Fit import Fit
+        from SpeckView.BE.Parameter import Parameter, Fitparameter
+        import numpy
+        fit = Fit(
+            Parameter(
+                fmin=50000, fmax=61000, df=1000,
+                pixel=1, dim=0.000001,
+                mittelungen=100,
+                amp_fitfkt=0, ph_fitfkt=3,
+                filter_breite=5, filter_ordnung=2,
+                phase_versatz=1000,
+                bereich_min=50000, bereich_max=61000,
+                amp=Fitparameter(0.001, 1000, 0, 10),
+                amp_min=0.001, amp_max=1000,
+                phase=Fitparameter(0.00, 1000, 0, 1000),
+                konf=None, version=0
+            ),
+            numpy.array([[0,0,1,1,5,10,5,1,1,0,0]]),
+            numpy.array([[180,179,175,174,90,0,-90,-174,-175,-179,-180]]),
+            lambda: None
+        ).vorschau(0)
+        self.assertAlmostEqual(fit.amp, 9, delta=1)
+        self.assertAlmostEqual(fit.guete_amp, 52, delta=2)
+        self.assertAlmostEqual(fit.phase, -180, delta=10)
+        self.assertAlmostEqual(fit.resfreq, 55000, delta=500)
+        self.assertAlmostEqual(fit.untergrund, 0)
+
+    def test_gui(self):
+        BERaster.load(messung, gwy.RUN_NONINTERACTIVE)
+        BERaster.load(messung, gwy.RUN_INTERACTIVE)
+
+
+if __name__ == '__main__':
+    import BERaster
+    BERaster.DEBUG = True
+    pfad = "/home/sebadur/Dokumente/BaTiO3/2016-03-08-R/"
+    messung = pfad + "16-03-08-11-16-50.ber"
+    tdms = [
+        pfad + "amp0.tdms",
+        pfad + "amp1.tdms",
+        pfad + "amp2.tdms",
+        "A.ber doch nicht so!"
+    ]
+
+    unittest.main()
