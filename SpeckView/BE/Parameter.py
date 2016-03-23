@@ -11,7 +11,7 @@ from SpeckView.Sonstige import Fehler
 class Parameter:
     """ Alle für den Fit einer Rastermessung nötigen Messparameter """
     def __init__(self, fmin, fmax, df, pixel, dim, mittelungen, amp_fitfkt, ph_fitfkt, filter_breite, filter_ordnung,
-                 phase_versatz, bereich_min, bereich_max, amp, amp_min, amp_max, phase, konf):
+                 phase_versatz, bereich_min, bereich_max, amp, amp_min, amp_max, phase, konf, version):
         """
         :type fmin: int
         :type fmax: int
@@ -35,6 +35,7 @@ class Parameter:
         :type amp_max: float
         :type phase: Fitparameter
         :type konf: SpeckView.BE.Konfiguration.Konfiguration
+        ;:type version: int
         """
         if fmin >= fmax or amp_min >= amp_max:
             raise Fehler()
@@ -75,6 +76,8 @@ class Parameter:
 
         self.konf = konf
         """ Konfigurationseinstellungen """
+        self.version = version
+        """ Version des Speicherformats (0, 1: zeilenweise getrennt, 2: kombiniert) """
 
         self.df = df
         """ Abstand der Messwerte auf der Frequenzskala in Hz """

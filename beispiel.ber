@@ -1,5 +1,6 @@
 [konfig]
 format = "BE Raster"
+version = 0
 fmin = 50000
 fmax = 90000
 df = 20,000000

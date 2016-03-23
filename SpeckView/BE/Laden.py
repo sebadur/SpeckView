@@ -6,7 +6,6 @@
 import gtk
 import numpy
 from gwy import Container
-from ConfigParser import ConfigParser
 
 from SpeckView.Plotter import Plotter
 from SpeckView import Format
@@ -17,6 +16,7 @@ from TDMS import TDMS
 from Konfiguration import Konfiguration
 from Konstant import *
 from Parameter import *
+from Parser import Parser
 
 
 class Laden(gtk.Builder):
@@ -53,13 +53,12 @@ class Laden(gtk.Builder):
         self.fortschritt = self.get_object('fortschritt')
         """ :type: gtk.ProgressBar """
 
-        parser = ConfigParser()
-        # Komma und Punkt als Dezimaltrennzeichen erlauben (keine Tausendertrennzeichen):
-        parser.getfloat = lambda s, o: float(parser.get(s, o).replace(',', '.'))
+        parser = Parser()
         parser.read(konfig_datei)
 
         konf = Konfiguration(konfig_datei)
         self.konf = konf
+        self.version = parser.getint(konf.konfig, konf.version)
 
         self.pixel = self.spinbutton('pixel')
         self.pixel.set_value(parser.getint(konf.konfig, konf.pixel))
@@ -146,7 +145,8 @@ class Laden(gtk.Builder):
                 off_min=self.spinbutton('phase_off_min').get_value(),
                 off_max=self.spinbutton('phase_off_max').get_value()
             ),
-            konf=self.konf
+            konf=self.konf,
+            version=self.version
         )
 
     def messwerte_lesen(self, par):

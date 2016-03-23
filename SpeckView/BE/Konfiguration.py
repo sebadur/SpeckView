@@ -14,7 +14,7 @@ class Konfiguration:
         self.datei = datei  # TODO path.relpath(datei)
         self.pfad = path.dirname(datei)
 
-        self.format = 1
+        self.version = 'version'
         self.konfig = 'konfig'
         self.df = 'df'
         self.mittelungen = 'mittelungen'
