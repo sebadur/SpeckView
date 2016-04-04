@@ -7,6 +7,7 @@
 import gwy
 from ctypes import c_double, c_byte
 import cPickle
+from cPickle import HIGHEST_PROTOCOL
 from cStringIO import StringIO
 from os import SEEK_END
 
@@ -77,7 +78,7 @@ def set_custom(c, name, objekt, permanent=True):
     :type permanent: bool
     """
     ser = StringIO()
-    cPickle.dump(objekt, ser, cPickle.HIGHEST_PROTOCOL)
+    cPickle.dump(objekt, ser, HIGHEST_PROTOCOL)
     ser.seek(0, SEEK_END)
     byte = ser.tell()
     go = gwy.DataField((byte+1)/4, 1, 1, 1, False)

@@ -4,6 +4,9 @@
 """
 
 import gtk
+import cPickle
+from cPickle import UnpicklingError, HIGHEST_PROTOCOL
+from os.path import sep
 
 
 class Konfiguration:
@@ -35,20 +38,50 @@ class Konfiguration:
 
 
 class KonfigFenster(gtk.Builder):
-    def __init__(self, verzeichnis, konfig_datei):
+    def __init__(self, verzeichnis, konfig_datei, pygwy):
         """
         :type verzeichnis: str
         :type konfig_datei: str
+        :type pygwy: str
         """
         self.verzeichnis = verzeichnis
         self.konfig_datei = konfig_datei
+        self.zuletzt = pygwy + sep + 'SpeckView' + sep + 'BE' + sep + 'konfig.tmp'
 
         gtk.Builder.__init__(self)
-        self.add_from_file(verzeichnis + '/konfig.glade')
+        self.add_from_file(verzeichnis + sep + 'konfig.glade')
 
-        self.konf = None
-        """ :type: Konfiguration """
-        
+        try:
+            self.konf = cPickle.load(open(self.zuletzt, 'r'))
+            """ :type: Konfiguration """
+        except (IOError, EOFError, UnpicklingError):
+            self.konf = Konfiguration(verzeichnis, konfig_datei)
+
+        self.version = self.entry('version')
+        self.version.set_text(self.konf.version)
+        self.name = self.entry('name')
+        self.name.set_text(self.konf.konfig)
+        self.mittelungen = self.entry('mittelungen')
+        self.mittelungen.set_text(self.konf.mittelungen)
+        self.pixel = self.entry('pixel')
+        self.pixel.set_text(self.konf.pixel)
+        self.df = self.entry('df')
+        self.df.set_text(self.konf.df)
+        self.fmin = self.entry('fmin')
+        self.fmin.set_text(self.konf.fmin)
+        self.fmax = self.entry('fmax')
+        self.fmax.set_text(self.konf.fmax)
+        self.dim = self.entry('dim')
+        self.dim.set_text(self.konf.dim)
+        self.gruppe = self.entry('gruppe')
+        self.gruppe.set_text(self.konf.gruppe)
+        self.kanal = self.entry('kanal')
+        self.kanal.set_text(self.konf.kanal)
+        self.amp = self.entry('amp')
+        self.amp.set_text(self.konf.amp)
+        self.phase = self.entry('phase')
+        self.phase.set_text(self.konf.phase)
+
         self.ui = self.get_object('fenster')
         """ :type: gtk.Window """
 
@@ -63,20 +96,21 @@ class KonfigFenster(gtk.Builder):
         self.konf = Konfiguration(
             verzeichnis=self.verzeichnis,
             datei=self.konfig_datei,
-            version=self.entry('version').get_text(),
-            konfig=self.entry('name').get_text(),
-            mittelungen=self.entry('mittelungen').get_text(),
-            pixel=self.entry('pixel').get_text(),
-            df=self.entry('df').get_text(),
-            fmin=self.entry('fmin').get_text(),
-            fmax=self.entry('fmax').get_text(),
-            dim=self.entry('dim').get_text(),
-            gruppe=self.entry('gruppe').get_text(),
-            kanal=self.entry('kanal').get_text(),
-            amp=self.entry('amp').get_text(),
-            phase=self.entry('phase').get_text()
+            version=self.version.get_text(),
+            konfig=self.name.get_text(),
+            mittelungen=self.mittelungen.get_text(),
+            pixel=self.pixel.get_text(),
+            df=self.df.get_text(),
+            fmin=self.fmin.get_text(),
+            fmax=self.fmax.get_text(),
+            dim=self.dim.get_text(),
+            gruppe=self.gruppe.get_text(),
+            kanal=self.kanal.get_text(),
+            amp=self.amp.get_text(),
+            phase=self.phase.get_text()
         )
         self.ui.destroy()
+        cPickle.dump(self.konf, open(self.zuletzt, 'w'), HIGHEST_PROTOCOL)
         gtk.main_quit()
 
     def entry(self, name):

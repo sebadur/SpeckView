@@ -6,6 +6,7 @@
 import gtk
 import numpy
 from gwy import Container
+from os.path import sep
 
 from SpeckView import Format
 from SpeckView.Plotter import Plotter
@@ -33,7 +34,7 @@ class Laden(gtk.Builder):
         self.phase = None
         """ :type: numpy.multiarray.ndarray """
 
-        self.add_from_file(konf.verzeichnis + '/laden.glade')
+        self.add_from_file(konf.verzeichnis + sep + 'laden.glade')
 
         self.ui = self.window('fenster_laden')
         self.ff = self.window('fenster_fortschritt')
