@@ -7,22 +7,21 @@ import gtk
 import numpy
 from gwy import Container
 
-from Ergebnis import amp_verlauf, phase_verlauf
-from Fit import Fit
-from Konfiguration import Konfiguration
-from Konstant import *
-from Parameter import *
-from Parser import DefaultParser
 from SpeckView import Format
 from SpeckView.Plotter import Plotter
+from SpeckView.Parser import DefaultParser
+
+from Ergebnis import amp_verlauf, phase_verlauf
+from Fit import Fit
+from Konstant import *
+from Parameter import *
 from TDMS import TDMS
 
 
 class Laden(gtk.Builder):
-    def __init__(self, glade, konfig_datei):
+    def __init__(self, konf):
         """
-        :type glade: str
-        :type konfig_datei: str
+        :type konf: Konfiguration.Konfiguration
         """
         gtk.Builder.__init__(self)
 
@@ -34,17 +33,14 @@ class Laden(gtk.Builder):
         self.phase = None
         """ :type: numpy.multiarray.ndarray """
 
-        self.glade = glade
-        self.add_from_file(glade + '/laden.glade')
+        self.add_from_file(konf.verzeichnis + '/laden.glade')
 
         self.ui = self.window('fenster_laden')
         self.ff = self.window('fenster_fortschritt')
-        self.fk = self.window('fenster_konfig')
 
         self.connect_signals({
             'ende': gtk.main_quit,
             'fit_starten': self.fit_starten,
-            'konfig': lambda _: self.fk.show_all(),
             'abbrechen': lambda _: Fit.stopp(),
             'vorschau': self.vorschau
         })
@@ -53,9 +49,8 @@ class Laden(gtk.Builder):
         """ :type: gtk.ProgressBar """
 
         parser = DefaultParser()
-        parser.read(konfig_datei)
+        parser.read(konf.datei)
 
-        konf = Konfiguration(konfig_datei)
         self.konf = konf
         self.version = parser.getint(konf.konfig, konf.version)
 

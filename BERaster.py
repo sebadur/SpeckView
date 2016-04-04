@@ -54,11 +54,13 @@ def load(dateiname, modus=None):
         import sys
         import os
         home = os.getenv('HOME')
+        verzeichnis = home + '/.gwyddion/pygwy/SpeckView/BE/'
         if not DEBUG:
             sys.path.append(home + '/.gwyddion/pygwy/')
 
+        from SpeckView.BE.Konfiguration import KonfigFenster
         from SpeckView.BE.Laden import Laden
-        geladen = Laden(home + '/.gwyddion/pygwy/SpeckView/BE/', dateiname)
+        geladen = Laden(KonfigFenster(verzeichnis, dateiname).konf)
 
         # TODO Test: Befreien der reservierten Resourcen (Gwyddion-Bug?)
         return geladen.container

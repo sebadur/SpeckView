@@ -72,19 +72,21 @@ def _lade_tdms(tdms, dim=2):
 
     daten = numpy.zeros((pixel, messpunkte))
 
-    if len(tdms.data) != pixel * messpunkte * mittelungen:
-        print("Die angegebenen Messparameter stimmen nicht für " + tdms.path)
-        return daten
-
     for n in range(pixel):
         for durchlauf in range(mittelungen):
-            """
-            Mittelung (durch Addition)
-            UND
-            Begrenzung des Fitbereichs (zur Eliminierung von parasitären Frequenzpeaks) nach Angabe in GUI
-            """
-            von = n * messpunkte * mittelungen + durchlauf * messpunkte
-            bis = von + messpunkte
-            daten[n] += tdms.data[von:bis]
+            try:
+                """
+                Mittelung (durch Addition)
+                UND
+                Begrenzung des Fitbereichs (zur Eliminierung von parasitären Frequenzpeaks) nach Angabe in GUI
+                """
+                von = n * messpunkte * mittelungen + durchlauf * messpunkte
+                bis = von + messpunkte
+                daten[n] += tdms.data[von:bis]
+            except ValueError:
+                """
+                Fehlende Daten werden hier zunächst ignoriert
+                """
+                pass
 
     return daten / mittelungen

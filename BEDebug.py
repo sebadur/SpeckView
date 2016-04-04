@@ -62,8 +62,8 @@ class DebugTest(unittest.TestCase):
                 phase=Fitparameter(0.00, 1000, 0, 1000),
                 konf=None, version=0
             ),
-            numpy.array([[0,0,1,1,5,10,5,1,1,0,0]]),
-            numpy.array([[180,179,175,174,90,0,-90,-174,-175,-179,-180]]),
+            numpy.array([[0, 0, 1, 1, 5, 10, 5, 1, 1, 0, 0]]),
+            numpy.array([[180, 179, 175, 174, 90, 0, -90, -174, -175, -179, -180]]),
             lambda: None
         ).vorschau(0)
         self.assertAlmostEqual(fit.amp, 9, delta=1)
