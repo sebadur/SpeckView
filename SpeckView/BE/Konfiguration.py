@@ -3,7 +3,6 @@
 @author: Sebastian Badur
 """
 
-from os import path
 import gtk
 
 
