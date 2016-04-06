@@ -55,7 +55,7 @@ def _lade_zeile(y):
     :rtype: numpy.multiarray.ndarray
     """
     return _lade_tdms(
-        TdmsFile(_par.konf.verzeichnis + path.sep + _typ + str(y) + '.tdms').object(_par.konf.gruppe, _par.konf.kanal),
+        TdmsFile(_par.konf.datei.rsplit(path.sep, 1)[0] + path.sep + _typ + str(y) + '.tdms').object(_par.konf.gruppe, _par.konf.kanal),
         dim=1
     )
 
