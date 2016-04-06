@@ -20,7 +20,7 @@ from TDMS import TDMS
 
 
 class Laden(gtk.Builder):
-    def __init__(self, konf):
+    def __init__(self, konf, svbe):
         """
         :type konf: Konfiguration.Konfiguration
         """
@@ -34,7 +34,7 @@ class Laden(gtk.Builder):
         self.phase = None
         """ :type: numpy.multiarray.ndarray """
 
-        self.add_from_file(konf.verzeichnis + sep + 'laden.glade')
+        self.add_from_file(svbe + sep + 'laden.glade')
 
         self.ui = self.window('fenster_laden')
         self.ff = self.window('fenster_fortschritt')
