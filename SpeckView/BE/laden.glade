@@ -409,6 +409,7 @@
                               <object class="GtkButton" id="button1">
                                 <property name="label" translatable="yes">bearbeiten</property>
                                 <property name="visible">True</property>
+                                <property name="sensitive">False</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">True</property>
                                 <property name="use_action_appearance">False</property>
@@ -634,6 +635,7 @@
                                 <property name="primary_icon_sensitive">True</property>
                                 <property name="secondary_icon_sensitive">True</property>
                                 <property name="adjustment">adjustment20</property>
+                                <property name="numeric">True</property>
                               </object>
                               <packing>
                                 <property name="left_attach">1</property>
@@ -652,6 +654,7 @@
                                 <property name="primary_icon_sensitive">True</property>
                                 <property name="secondary_icon_sensitive">True</property>
                                 <property name="adjustment">adjustment19</property>
+                                <property name="numeric">True</property>
                               </object>
                               <packing>
                                 <property name="left_attach">2</property>
@@ -721,6 +724,7 @@
                               <object class="GtkButton" id="button2">
                                 <property name="label" translatable="yes">bearbeiten</property>
                                 <property name="visible">True</property>
+                                <property name="sensitive">False</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">True</property>
                                 <property name="use_action_appearance">False</property>
@@ -820,6 +824,7 @@
                                 <property name="primary_icon_sensitive">True</property>
                                 <property name="secondary_icon_sensitive">True</property>
                                 <property name="digits">4</property>
+                                <property name="numeric">True</property>
                               </object>
                               <packing>
                                 <property name="left_attach">1</property>
@@ -906,6 +911,7 @@
                                 <property name="primary_icon_sensitive">True</property>
                                 <property name="secondary_icon_sensitive">True</property>
                                 <property name="adjustment">adjustment18</property>
+                                <property name="numeric">True</property>
                               </object>
                               <packing>
                                 <property name="expand">True</property>
