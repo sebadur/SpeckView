@@ -159,6 +159,7 @@
               <object class="GtkEntry" id="name">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
+                <property name="editable">False</property>
                 <property name="invisible_char">•</property>
                 <property name="text" translatable="yes">konfig</property>
                 <property name="invisible_char_set">True</property>

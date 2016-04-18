@@ -11,7 +11,7 @@ from os.path import sep
 
 class Konfiguration:
     def __init__(self, verzeichnis, datei,
-                 version="version", konfig="konfig",
+                 version="version",
                  mittelungen="mittelungen", pixel="pixel",
                  df="df", fmin="fmin", fmax="fmax", dim="dim",
                  gruppe="Unbenannt", kanal="Untitled",
@@ -24,7 +24,7 @@ class Konfiguration:
         self.datei = datei  # TODO path.relpath(datei)
 
         self.version = version
-        self.konfig = konfig
+        self.konfig = 'konfig'
         self.df = df
         self.mittelungen = mittelungen
         self.fmin = fmin
@@ -59,8 +59,6 @@ class KonfigFenster(gtk.Builder):
 
         self.version = self.entry('version')
         self.version.set_text(self.konf.version)
-        self.name = self.entry('name')
-        self.name.set_text(self.konf.konfig)
         self.mittelungen = self.entry('mittelungen')
         self.mittelungen.set_text(self.konf.mittelungen)
         self.pixel = self.entry('pixel')
@@ -97,7 +95,6 @@ class KonfigFenster(gtk.Builder):
             verzeichnis=self.verzeichnis,
             datei=self.konfig_datei,
             version=self.version.get_text(),
-            konfig=self.name.get_text(),
             mittelungen=self.mittelungen.get_text(),
             pixel=self.pixel.get_text(),
             df=self.df.get_text(),
