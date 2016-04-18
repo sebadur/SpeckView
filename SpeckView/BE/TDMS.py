@@ -3,7 +3,7 @@
 @author: Sebastian Badur
 """
 
-from os import path
+from os.path import sep
 import numpy
 from nptdms import TdmsFile
 from multiprocessing import Pool
@@ -55,7 +55,7 @@ def _lade_zeile(y):
     :rtype: numpy.multiarray.ndarray
     """
     return _lade_tdms(
-        TdmsFile(_par.konf.datei.rsplit(path.sep, 1)[0] + path.sep + _typ + str(y) + '.tdms').object(_par.konf.gruppe, _par.konf.kanal),
+        TdmsFile(_par.konf.verzeichnis + sep + _typ + str(y) + '.tdms').object(_par.konf.gruppe, _par.konf.kanal),
         dim=1
     )
 

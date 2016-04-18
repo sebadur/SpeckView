@@ -10,17 +10,15 @@ from os.path import sep
 
 
 class Konfiguration:
-    def __init__(self, verzeichnis, datei,
-                 version="version",
+    def __init__(self, datei, version="version",
                  mittelungen="mittelungen", pixel="pixel",
                  df="df", fmin="fmin", fmax="fmax", dim="dim",
                  gruppe="Unbenannt", kanal="Untitled",
                  amp="amp", phase="phase"):
         """
-        :type verzeichnis: str
         :type datei: str
         """
-        self.verzeichnis = verzeichnis
+        self.verzeichnis = datei.rsplit(sep, 1)[0]
         self.datei = datei  # TODO path.relpath(datei)
 
         self.version = version
@@ -38,24 +36,22 @@ class Konfiguration:
 
 
 class KonfigFenster(gtk.Builder):
-    def __init__(self, verzeichnis, konfig_datei, pygwy):
+    def __init__(self, konfig_datei, svbe):
         """
-        :type verzeichnis: str
         :type konfig_datei: str
-        :type pygwy: str
+        :type svbe: str
         """
-        self.verzeichnis = verzeichnis
         self.konfig_datei = konfig_datei
-        self.zuletzt = pygwy + sep + 'SpeckView' + sep + 'BE' + sep + 'konfig.tmp'
+        self.zuletzt = svbe + sep + 'konfig.tmp'
 
         gtk.Builder.__init__(self)
-        self.add_from_file(verzeichnis + sep + 'konfig.glade')
+        self.add_from_file(svbe + sep + 'konfig.glade')
 
         try:
             self.konf = cPickle.load(open(self.zuletzt, 'r'))
             """ :type: Konfiguration """
         except (IOError, EOFError, UnpicklingError):
-            self.konf = Konfiguration(verzeichnis, konfig_datei)
+            self.konf = Konfiguration(konfig_datei)
 
         self.version = self.entry('version')
         self.version.set_text(self.konf.version)
@@ -92,7 +88,6 @@ class KonfigFenster(gtk.Builder):
 
     def fertig(self, *_):
         self.konf = Konfiguration(
-            verzeichnis=self.verzeichnis,
             datei=self.konfig_datei,
             version=self.version.get_text(),
             mittelungen=self.mittelungen.get_text(),
