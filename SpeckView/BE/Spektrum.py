@@ -69,10 +69,11 @@ class Spektrum(gtk.Builder):
         self.amplitude = tdms.messwerte_lesen(self.par.konf.amp)
         if self.par.nr_fkt_ph is not None:
             self.phase = tdms.messwerte_lesen(self.par.konf.phase)
-        #self.x.set_upper()
+        self.x.set_range(1, self.par.pixel)
+        self.y.set_range(1, self.par.pixel)
 
     def n(self):
-        return self.x.get_value_as_int() + self.y.get_value_as_int() * self.par.pixel
+        return self.x.get_value_as_int() + 1 + (self.y.get_value_as_int() + 1) * self.par.pixel
 
     def aktualisieren(self, _):
         n = self.n()
