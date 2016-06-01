@@ -23,19 +23,6 @@ class Spektrum(gtk.Builder):
         """
         gtk.Builder.__init__(self)
 
-        try:
-            self.erg = Format.get_custom(c, ERGEBNIS)
-            """ :type: list[SpeckView.BE.Ergebnis.Ergebnis] """
-            self.par = Format.get_custom(c, PARAMETER)
-            """ :type: SpeckView.BE.Parameter.Parameter """
-
-            self.amplitude = []
-            self.phase = []
-            self.messwerte_lesen()
-        except:
-            stderr.write("Es sind keine Spektroskopiedaten vorhanden.")
-            return
-
         self.add_from_file(glade + 'spektrum.glade')
 
         self.ui = self.get_object('fenster_spektrum')
@@ -46,6 +33,19 @@ class Spektrum(gtk.Builder):
 
         self.plotter = Plotter("Frequenz (Hz)", "Amplitude (V)")
         self.get_object('vorschau').add(self.plotter)
+
+        try:
+            self.erg = Format.get_custom(c, ERGEBNIS)
+            """ :type: list[SpeckView.BE.Ergebnis.Ergebnis] """
+            self.par = Format.get_custom(c, PARAMETER)
+            """ :type: SpeckView.BE.Parameter.Parameter """
+
+            self.amplitude = []
+            self.phase = []
+            self.messwerte_lesen()
+        except Exception as f:
+            stderr.write("Spektroskopiedaten konnten nicht gelesen werden:\n" + f.message)
+            return
 
         self.connect_signals({
             'ende': gtk.main_quit,
