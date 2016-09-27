@@ -189,12 +189,13 @@ class Laden(gtk.Builder):
                 pixel=par.pixel
             )
 
-        anlegen([n.amp for n in erg], "Amplitude (a.u.)", "a.u.")
+        anlegen([n.amp for n in erg], "Amplitude (V)", "V")
         anlegen([n.phase for n in erg], "Phase (°)", "°")
         anlegen([n.resfreq for n in erg], "Resonanzfrequenz (Hz)", "Hz")
         anlegen([n.guete_amp for n in erg], u"Güte (Amplitudenfit)", "")
         anlegen([n.guete_ph for n in erg], u"Güte (Phasenfit)", "")
-        anlegen([n.untergrund for n in erg], "Untergrund (a.u.)", "a.u.")
+        anlegen([n.guete_amp for n in erg], "Mittlere Abweichung (V)", "V")
+        anlegen([n.untergrund for n in erg], "Untergrund (V)", "V")
         anlegen([n.phase_rel for n in erg], "Phasenversatz (°)", "°")
 
         Format.set_custom(self.container, ERGEBNIS, erg)

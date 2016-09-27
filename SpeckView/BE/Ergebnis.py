@@ -10,13 +10,14 @@ from FitFunktion import fkt_amp, fkt_ph
 
 
 class Ergebnis:
-    def __init__(self, amp, resfreq, guete_amp, untergrund, phase=NaN, guete_ph=NaN, phase_rel=NaN):
+    def __init__(self, amp, resfreq, guete_amp, untergrund, fehler, phase=NaN, guete_ph=NaN, phase_rel=NaN):
         """
         :type amp: float
         :type phase: float
         :type resfreq: float
         :type guete_amp: float
         :type untergrund: float
+        :type fehler: float
         :type resfreq: float
         :type guete_ph: float
         :type phase_rel: float
@@ -27,6 +28,7 @@ class Ergebnis:
         self.guete_amp = guete_amp
         self.guete_ph = guete_ph
         self.untergrund = untergrund
+        self.fehler = fehler
         self.phase_rel = phase_rel
 
 

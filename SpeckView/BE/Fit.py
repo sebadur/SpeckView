@@ -155,7 +155,8 @@ def _fit_punkt(n):
             amp=amp.best_values['amp'],
             resfreq=amp.best_values['resfreq'],
             guete_amp=amp.best_values['guete'],
-            untergrund=amp.best_values['untergrund']
+            untergrund=amp.best_values['untergrund'],
+            fehler=amp.redchi
         )
 
     # Resonanzfrequenz
@@ -165,7 +166,7 @@ def _fit_punkt(n):
     # ------------- PHASE fitten -------------
     # ----------------------------------------
 
-    halb = abs(_par.phase_versatz) + 10 * _par.df # Halbe Frequenzbreite des Phasenversatzes
+    halb = abs(_par.phase_versatz) + 10 * _par.df  # Halbe Frequenzbreite des Phasenversatzes
     # +df, weil der Fit auch bei Versatz = 0 funktionieren muss
     von = resfreq - halb  # Untere Versatzgrenze
     bis = resfreq + halb  # Obere Versatzgrenze
@@ -190,6 +191,7 @@ def _fit_punkt(n):
             resfreq=amp.best_values['resfreq'],
             guete_amp=amp.best_values['guete'],
             untergrund=amp.best_values['untergrund'],
+            fehler=amp.redchi,
             phase=randwert(phase, _par.phase_versatz),
             guete_ph=0,
             phase_rel=0
@@ -215,6 +217,7 @@ def _fit_punkt(n):
             resfreq=amp.best_values['resfreq'],
             guete_amp=amp.best_values['guete'],
             untergrund=amp.best_values['untergrund'],
+            fehler=amp.redchi,
             phase=randwert(ph.best_fit, _par.phase_versatz),
             guete_ph=ph.best_values['guete'],
             phase_rel=ph.best_values['rel']
@@ -223,7 +226,7 @@ def _fit_punkt(n):
 
 def randwert(phase, versatz):
     """
-    :type phase: list
+    :type phase: numpy.multiarray.ndarray
     :type versatz: int
     """
     if versatz < 0:

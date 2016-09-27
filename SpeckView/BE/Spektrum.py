@@ -73,7 +73,7 @@ class Spektrum(gtk.Builder):
         self.y.set_range(1, self.par.pixel)
 
     def n(self):
-        return self.x.get_value_as_int() + 1 + (self.y.get_value_as_int() + 1) * self.par.pixel
+        return self.x.get_value_as_int() - 1 + (self.y.get_value_as_int() - 1) * self.par.pixel
 
     def aktualisieren(self, _):
         n = self.n()
@@ -83,5 +83,9 @@ class Spektrum(gtk.Builder):
             self.plotter.plot(frequenzen(self.par), amp_verlauf(self.par, self.erg[n]))
         else:
             self.plotter.plot(frequenzen_voll(self.par), self.phase[n])
-            self.plotter.plot(frequenzen(self.par), phase_verlauf(self.par, self.erg[n]))
+            try:
+                self.plotter.plot(frequenzen(self.par), phase_verlauf(self.par, self.erg[n]))
+            except ValueError:
+                # Geglättete Phase oder kein Fit
+                pass
         self.plotter.draw()
