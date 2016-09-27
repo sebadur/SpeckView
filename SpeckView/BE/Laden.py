@@ -193,8 +193,11 @@ class Laden(gtk.Builder):
         anlegen([n.phase for n in erg], "Phase (°)", "°")
         anlegen([n.resfreq for n in erg], "Resonanzfrequenz (Hz)", "Hz")
         anlegen([n.guete_amp for n in erg], u"Güte (Amplitudenfit)", "")
+        anlegen([n.amp_fhlr for n in erg], "Fehler Amp. (V)", "V")
+        anlegen([n.phase_fhlr for n in erg], "Fehler Phase (°)", "°")
+        anlegen([n.resfreq_fhlr for n in erg], "Fehler Resfreq. (Hz)", "Hz")
+        anlegen([n.guete_amp_fhlr for n in erg], u"Fehler Güte (Ampfit.)", "")
         anlegen([n.guete_ph for n in erg], u"Güte (Phasenfit)", "")
-        anlegen([n.guete_amp for n in erg], "Mittlere Abweichung (V)", "V")
         anlegen([n.untergrund for n in erg], "Untergrund (V)", "V")
         anlegen([n.phase_rel for n in erg], "Phasenversatz (°)", "°")
 

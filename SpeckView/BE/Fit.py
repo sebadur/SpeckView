@@ -152,11 +152,13 @@ def _fit_punkt(n):
     # Wenn keine Phase gefittet werden soll:
     if _mod_ph is KEIN_FIT:
         return Ergebnis(
-            amp=amp.best_values['amp'],
-            resfreq=amp.best_values['resfreq'],
-            guete_amp=amp.best_values['guete'],
-            untergrund=amp.best_values['untergrund'],
-            fehler=amp.redchi
+            amp=amp.params['amp'].value,
+            amp_fhlr=amp.params['amp'].stderr,
+            resfreq=amp.params['resfreq'].value,
+            resfreq_fhlr=amp.params['resfreq'].stderr,
+            guete_amp=amp.params['guete'].value,
+            guete_amp_fhlr=amp.params['guete'].stderr,
+            untergrund=amp.best_values['untergrund']
         )
 
     # Resonanzfrequenz
@@ -187,14 +189,14 @@ def _fit_punkt(n):
     if _mod_ph is GLAETTEN:  # Nur glätten:
         phase = savgol_filter(wahl_phase, _par.filter_breite, _par.filter_ordnung)
         return Ergebnis(
-            amp=amp.best_values['amp'],
-            resfreq=amp.best_values['resfreq'],
-            guete_amp=amp.best_values['guete'],
+            amp=amp.params['amp'].value,
+            amp_fhlr=amp.params['amp'].stderr,
+            resfreq=amp.params['resfreq'].value,
+            resfreq_fhlr=amp.params['resfreq'].stderr,
+            guete_amp=amp.params['guete'].value,
+            guete_amp_fhlr=amp.params['guete'].stderr,
             untergrund=amp.best_values['untergrund'],
-            fehler=amp.redchi,
-            phase=randwert(phase, _par.phase_versatz),
-            guete_ph=0,
-            phase_rel=0
+            phase=randwert(phase, _par.phase_versatz)
         )
 
     else:
@@ -213,14 +215,17 @@ def _fit_punkt(n):
         )
 
         return Ergebnis(
-            amp=amp.best_values['amp'],
-            resfreq=amp.best_values['resfreq'],
-            guete_amp=amp.best_values['guete'],
+            amp=amp.params['amp'].value,
+            amp_fhlr=amp.params['amp'].stderr,
+            resfreq=amp.params['resfreq'].value,
+            resfreq_fhlr=amp.params['resfreq'].stderr,
+            guete_amp=amp.params['guete'].value,
+            guete_amp_fhlr=amp.params['guete'].stderr,
             untergrund=amp.best_values['untergrund'],
-            fehler=amp.redchi,
             phase=randwert(ph.best_fit, _par.phase_versatz),
             guete_ph=ph.best_values['guete'],
-            phase_rel=ph.best_values['rel']
+            phase_rel=ph.best_values['rel'],
+            phase_fhlr=ph.params['resfreq'].stderr
         )
 
 
