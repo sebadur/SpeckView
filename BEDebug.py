@@ -31,7 +31,7 @@ class DebugTest(unittest.TestCase):
         from SpeckView.BE.Ergebnis import Ergebnis
         c = gwy.Container()
         debug = "debug"
-        original = [Ergebnis(3, 5, 7, 11)]
+        original = [Ergebnis(3, 5, 7, 11, 1, 1, 1)]
         Format.set_custom(c, debug, original)
         resultat = Format.get_custom(c, debug)
         """ :type: list[Ergebnis.Ergebnis] """
