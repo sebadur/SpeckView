@@ -24,6 +24,7 @@ class Laden(gtk.Builder):
         """
         :type konf: Konfiguration.Konfiguration
         """
+        self.konf = konf
         gtk.Builder.__init__(self)
 
         self.container = None
@@ -50,28 +51,27 @@ class Laden(gtk.Builder):
         """ :type: gtk.ProgressBar """
 
         parser = DefaultParser()
-        parser.read(konf.datei)
+        parser.read(konf)
 
-        self.konf = konf
-        self.version = parser.getint(konf.konfig, konf.version)
+        self.version = parser.getint('BE', 'Version')
 
         self.pixel = self.spinbutton('pixel')
-        self.pixel.set_value(parser.getint(konf.konfig, konf.pixel))
+        self.pixel.set_value(parser.getint('Raster', 'Pixel'))
         self.dim = self.spinbutton('dim')
-        self.dim.set_value(parser.getfloat(konf.konfig, konf.dim))
+        self.dim.set_value(parser.getfloat('Raster', 'Dimension'))
 
         self.df = self.spinbutton('df')
-        self.df.set_value(parser.getfloat(konf.konfig, konf.df))
+        self.df.set_value(parser.getfloat('Signal', 'Rate') / parser.getfloat('Signal', 'Sample'))
         self.mittelungen = self.spinbutton('mittelungen')
-        self.mittelungen.set_value(parser.getint(konf.konfig, konf.mittelungen))
+        self.mittelungen.set_value(1)
         self.fmin = self.spinbutton('fmin')
         self.bereich_min = self.spinbutton('bereich_min')
-        fmin = parser.getint(konf.konfig, konf.fmin)
+        fmin = parser.getint('Signalgenerator', 'f_start')
         self.fmin.set_value(fmin)
         self.bereich_min.set_value(fmin)
         self.fmax = self.spinbutton('fmax')
         self.bereich_max = self.spinbutton('bereich_max')
-        fmax = parser.getint(konf.konfig, konf.fmax)
+        fmax = parser.getint('Signalgenerator', 'f_ende')
         self.fmax.set_value(fmax)
         self.bereich_max.set_value(fmax)
 
@@ -149,10 +149,10 @@ class Laden(gtk.Builder):
         :type par: Parameter
         :rtype: (numpy.multiarray.ndarray, numpy.multiarray.ndarray)
         """
-        tdms = TDMS(par, self.konf)
-        self.amplitude = tdms.messwerte_lesen(self.konf.amp)
+        tdms = TDMS(par, par.konf)
+        self.amplitude = tdms.messwerte_lesen('amp')
         if par.nr_fkt_ph is not None:
-            self.phase = tdms.messwerte_lesen(self.konf.phase)
+            self.phase = tdms.messwerte_lesen('phase')
         self.get_object('pixel2').set_upper(self.pixel.get_value() ** 2)
 
     def fit_starten(self, _):

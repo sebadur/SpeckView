@@ -34,7 +34,7 @@ class Parameter:
         :type amp_min: float
         :type amp_max: float
         :type phase: Fitparameter
-        :type konf: SpeckView.BE.Konfiguration.Konfiguration
+        :type konf: str
         ;:type version: int
         """
         if fmin >= fmax or amp_min >= amp_max:

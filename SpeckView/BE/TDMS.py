@@ -13,7 +13,7 @@ class TDMS:
     def __init__(self, par, konf):
         """
         :type par: SpeckView.BE.Parameter.Parameter
-        :type konf: SpeckView.BE.Konfiguration.Konfiguration
+        :type konf: str
         """
         self.par = par
         self.konf = konf
@@ -27,22 +27,8 @@ class TDMS:
         _par = self.par
         _typ = typ
 
-        if self.par.version == 2:
-            #  Komplettes Raster in einer Datei
-            return _lade_tdms(
-                tdms=TdmsFile(_par.konf.datei.rsplit('.ber', 1)[0] + '.tdms').object(_par.konf.gruppe, typ)
-            )
-        else:
-            if self.par.version == 1:
-                start = 1
-            else:
-                start = 0
-            #  Je eine Datei pro Zeile im Raster
-            return numpy.reshape(
-                Pool().map(_lade_zeile, range(start, start + _par.pixel)),
-                (-1, _par.messpunkte)
-            )
-
+        tdms = TdmsFile(_par.konf.rsplit('.be', 1)[0] + '.tdms')
+        return _lade_tdms(kanal=tdms.object('elstat', typ))
 
 _par = None
 """ :type: SpeckView.BE.Parameter.Parameter """
@@ -60,9 +46,9 @@ def _lade_zeile(y):
     )
 
 
-def _lade_tdms(tdms, dim=2):
+def _lade_tdms(kanal, dim=2):
     """
-    :type tdms: nptdms.TdmsObject
+    :type kanal: nptdms.TdmsObject
     :type dim: int
     :rtype: numpy.multiarray.ndarray
     """
@@ -82,7 +68,7 @@ def _lade_tdms(tdms, dim=2):
                 """
                 von = n * messpunkte * mittelungen + durchlauf * messpunkte
                 bis = von + messpunkte
-                daten[n] += tdms.data[von:bis]
+                daten[n] += kanal.data[von:bis]
             except ValueError:
                 """
                 Fehlende Daten werden hier zunächst ignoriert

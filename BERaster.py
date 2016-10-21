@@ -7,11 +7,10 @@ from ConfigParser import ConfigParser, Error
 
 import gwy
 plugin_type = 'FILE'
-plugin_desc = "Bandanregungsspektrum (.ini)"
+plugin_desc = "Bandanregungsspektrum (.be)"
 
 
 DEBUG = False
-konfig = 'konfig'
 
 
 def detect_by_name(dateiname):
@@ -19,7 +18,7 @@ def detect_by_name(dateiname):
     :type dateiname: str
     :rtype: int
     """
-    if dateiname.endswith('.ber'):
+    if dateiname.endswith('.be'):
         return 100
     else:
         return 0
@@ -36,7 +35,7 @@ def detect_by_content(dateiname, kopf, s, g):
     try:
         parser = ConfigParser()
         parser.read(dateiname)
-        if parser.get(konfig, 'format') == '"BE Raster"':
+        if parser.getint('BE', 'Version') == 3:
             return 100
     except Error:
         pass
@@ -60,9 +59,8 @@ def load(dateiname, modus=None):
             sys.path.append(pygwy)
         svbe = pygwy + sep + 'SpeckView' + sep + 'BE'
 
-        from SpeckView.BE.Konfiguration import KonfigFenster
         from SpeckView.BE.Laden import Laden
-        geladen = Laden(KonfigFenster(dateiname, svbe).konf, svbe)
+        geladen = Laden(os.path.relpath(dateiname), svbe)
 
         # TODO Test: Befreien der reservierten Resourcen (Gwyddion-Bug?)
         return geladen.container
