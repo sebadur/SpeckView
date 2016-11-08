@@ -7,6 +7,7 @@ import gtk
 import numpy
 from gwy import Container
 from os.path import sep
+from tkMessageBox import askyesno, showinfo
 
 from SpeckView import Format
 from SpeckView.Plotter import Plotter
@@ -19,12 +20,26 @@ from Parameter import *
 from TDMS import TDMS
 
 
+# Relevante Sektionen des BE-Formats Version 3
+sgl = 'Signal'
+sgn = 'Signalgenerator'
+# usb = 'USB'
+man = 'Manipulation'
+rst = 'Raster'
+
+
 class Laden(gtk.Builder):
     def __init__(self, konf, svbe):
         """
-        :type konf: Konfiguration.Konfiguration
+        :type konf: str
         """
         self.konf = konf
+
+        if askyesno('Kanal', 'elstat (Ja) oder elmech (Nein)?'):
+            self.kanal = 'elstat'
+        else:
+            self.kanal = 'elmech'
+
         gtk.Builder.__init__(self)
 
         self.container = None
@@ -50,28 +65,27 @@ class Laden(gtk.Builder):
         self.fortschritt = self.get_object('fortschritt')
         """ :type: gtk.ProgressBar """
 
-        parser = DefaultParser()
-        parser.read(konf)
-
-        self.version = parser.getint('BE', 'Version')
+        self.parser = DefaultParser()
+        self.parser.read(konf)
+        self.parser.getint = lambda sektion, option: int(self.parser.get(sektion, option).rsplit(',', 1)[0])
 
         self.pixel = self.spinbutton('pixel')
-        self.pixel.set_value(parser.getint('Raster', 'Pixel'))
+        self.pixel.set_value(self.parser.getint(rst, 'Pixel'))
         self.dim = self.spinbutton('dim')
-        self.dim.set_value(parser.getfloat('Raster', 'Dimension'))
+        self.dim.set_value(self.parser.getfloat(rst, 'Dimension'))
 
         self.df = self.spinbutton('df')
-        self.df.set_value(parser.getfloat('Signal', 'Rate') / parser.getfloat('Signal', 'Sample'))
+        self.df.set_value(self.parser.getfloat(sgl, 'Rate') / self.parser.getfloat(sgl, 'Sample'))
         self.mittelungen = self.spinbutton('mittelungen')
         self.mittelungen.set_value(1)
         self.fmin = self.spinbutton('fmin')
         self.bereich_min = self.spinbutton('bereich_min')
-        fmin = parser.getint('Signalgenerator', 'f_start')
+        fmin = self.parser.getint(sgn, 'f_start')
         self.fmin.set_value(fmin)
         self.bereich_min.set_value(fmin)
         self.fmax = self.spinbutton('fmax')
         self.bereich_max = self.spinbutton('bereich_max')
-        fmax = parser.getint('Signalgenerator', 'f_ende')
+        fmax = self.parser.getint(sgn, 'f_ende')
         self.fmax.set_value(fmax)
         self.bereich_max.set_value(fmax)
 
@@ -81,7 +95,7 @@ class Laden(gtk.Builder):
         gtk.main()
 
     def vorschau(self, _):
-        n = self.spinbutton('vorschau_pixel2').get_value()
+        n = self.spinbutton('vorschau_spektren').get_value()
         par = self.fitparameter()
         frequenz = frequenzen(par)
         if self.amplitude is None:
@@ -108,16 +122,18 @@ class Laden(gtk.Builder):
         """
         :rtype: Parameter
         """
-        fmin = self.fmin.get_value()
-        fmax = self.fmax.get_value()
-        df = self.df.get_value()
-
         return Parameter(
-            fmin=fmin,
-            fmax=fmax,
-            df=df,
+            fmin=self.fmin.get_value(),
+            fmax=self.fmax.get_value(),
+            df=self.df.get_value(),
+            raster=self.parser.getboolean(rst, 'Raster'),
             pixel=self.pixel.get_value_as_int(),
             dim=self.dim.get_value(),
+            spektroskopie=self.parser.getboolean(man, 'Spektroskopie'),
+            hysterese=self.parser.getboolean(man, 'Hysterese'),
+            dcmin=self.parser.getfloat(man, 'Umin'),
+            dcmax=self.parser.getfloat(man, 'Umax'),
+            ddc=self.parser.getfloat(man, 'dU'),
             mittelungen=self.mittelungen.get_value_as_int(),
             amp_fitfkt=self.combobox('methode_amp').get_active(),
             ph_fitfkt=self.combobox('methode_phase').get_active(),
@@ -141,7 +157,7 @@ class Laden(gtk.Builder):
                 off_max=self.spinbutton('phase_off_max').get_value()
             ),
             konf=self.konf,
-            version=self.version
+            kanal=self.kanal
         )
 
     def messwerte_lesen(self, par):
@@ -150,10 +166,10 @@ class Laden(gtk.Builder):
         :rtype: (numpy.multiarray.ndarray, numpy.multiarray.ndarray)
         """
         tdms = TDMS(par, par.konf)
-        self.amplitude = tdms.messwerte_lesen('amp')
+        self.amplitude = tdms.messwerte_lesen(self.kanal, 'amp')
         if par.nr_fkt_ph is not None:
-            self.phase = tdms.messwerte_lesen('phase')
-        self.get_object('pixel2').set_upper(self.pixel.get_value() ** 2)
+            self.phase = tdms.messwerte_lesen(self.kanal, 'phase')
+        self.get_object('spektren').set_upper(par.spektren)
 
     def fit_starten(self, _):
         par = self.fitparameter()
@@ -176,30 +192,53 @@ class Laden(gtk.Builder):
 
         # Gwyddion-Datenfeld:
         self.container = Container()
-        xy = Format.si_unit("m")
 
         def anlegen(inhalt, titel, einheit):
-            Format.volume_data(
-                c=self.container,
-                inhalt=inhalt,
-                einheit_xy=xy,
-                einheit_z=Format.si_unit(einheit),
-                titel=titel,
-                dim=par.dim,
-                pixel=par.pixel
-            )
+            if par.raster:
+                Format.channel_data(
+                    c=self.container,
+                    inhalt=inhalt,
+                    einheit_xy=Format.si_unit('m'),
+                    einheit_z=Format.si_unit(einheit),
+                    titel=titel,
+                    dim=par.dim,
+                    pixel=par.pixel  # TODO geht nur, wenn kein Spektrum
+                )
+            else:
+                Format.spectra_data(
+                    c=self.container,
+                    x=hysterese(par.dcmin, par.dcmax, par.ddc),
+                    y=inhalt,
+                    label_x='', label_y=''
+                )
 
-        anlegen([n.amp for n in erg], "Amplitude (V)", "V")
-        anlegen([n.phase for n in erg], "Phase (°)", "°")
-        anlegen([n.resfreq for n in erg], "Resonanzfrequenz (Hz)", "Hz")
-        anlegen([n.guete_amp for n in erg], u"Güte (Amplitudenfit)", "")
-        anlegen([n.amp_fhlr for n in erg], "Fehler Amp. (V)", "V")
-        anlegen([n.phase_fhlr for n in erg], "Fehler Phase (°)", "°")
-        anlegen([n.resfreq_fhlr for n in erg], "Fehler Resfreq. (Hz)", "Hz")
-        anlegen([n.guete_amp_fhlr for n in erg], u"Fehler Güte (Ampfit.)", "")
-        anlegen([n.guete_ph for n in erg], u"Güte (Phasenfit)", "")
-        anlegen([n.untergrund for n in erg], "Untergrund (V)", "V")
-        anlegen([n.phase_rel for n in erg], "Phasenversatz (°)", "°")
+        if par.spektroskopie:  # TODO Notlösung entfernen
+            datei = open(par.konf.rsplit('.be', 1)[0] + ".fit", 'w')
+            dc = hysterese(par.dcmin, par.dcmax, par.ddc)
+            datei.write('DC/V,A/V,dA/V,f0/Hz,df0/Hz,Q,dQ,Phase\n')
+            for n in range(par.spektren):
+                datei.write(
+                    str(dc[n]) + ',' + str(erg[n].amp) + ',' + str(erg[n].amp_fhlr) + ',' +
+                    str(erg[n].resfreq) + ',' + str(erg[n].resfreq_fhlr) + ',' + str(erg[n].guete_amp) + ',' +
+                    str(erg[n].guete_amp_fhlr) + ',' + str(erg[n].phase) + '\n'
+                )
+            datei.close()
+            showinfo("Gespeichert", "Fit gespeichert in " + datei.name)
+            self.ff.hide_all()
+            gtk.main_quit()
+            return
+
+        anlegen([n.amp for n in erg], "Amplitude", 'V')
+        anlegen([n.phase for n in erg], "Phase", '°')
+        anlegen([n.resfreq for n in erg], "Resonanzfrequenz", 'Hz')
+        anlegen([n.guete_amp for n in erg], u"Güte (Amplitudenfit)", '')
+        anlegen([n.amp_fhlr for n in erg], "Fehler Amp.", 'V')
+        anlegen([n.phase_fhlr for n in erg], "Fehler Phase", '°')
+        anlegen([n.resfreq_fhlr for n in erg], "Fehler Resfreq.", 'Hz')
+        anlegen([n.guete_amp_fhlr for n in erg], u"Fehler Güte (Ampfit.)", '')
+        anlegen([n.guete_ph for n in erg], u"Güte (Phasenfit)", '')
+        anlegen([n.untergrund for n in erg], "Untergrund", 'V')
+        anlegen([n.phase_rel for n in erg], "Phasenversatz", '°')
 
         Format.set_custom(self.container, ERGEBNIS, erg)
         Format.set_custom(self.container, PARAMETER, par)
@@ -243,3 +282,13 @@ class Laden(gtk.Builder):
         :rtype: gtk.Entry
         """
         return self.get_object(name)
+
+
+def hysterese(min, max, d):
+    mitte = (max + min) / 2
+    return numpy.concatenate((
+        numpy.arange(mitte, max, d),
+        numpy.arange(max, min, -d),
+        numpy.arange(min, mitte, d),
+        [ mitte ]
+    ))

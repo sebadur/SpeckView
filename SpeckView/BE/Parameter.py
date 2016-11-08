@@ -9,15 +9,22 @@ from SpeckView.Sonstige import Fehler
 
 
 class Parameter:
-    """ Alle für den Fit einer Rastermessung nötigen Messparameter """
-    def __init__(self, fmin, fmax, df, pixel, dim, mittelungen, amp_fitfkt, ph_fitfkt, filter_breite, filter_ordnung,
-                 phase_versatz, bereich_min, bereich_max, amp, amp_min, amp_max, phase, konf, version):
+    """ Alle für den Fit nötigen Messparameter """
+    def __init__(self, fmin, fmax, df, raster, pixel, dim, spektroskopie, hysterese, dcmin, dcmax, ddc, mittelungen,
+                 amp_fitfkt, ph_fitfkt, filter_breite, filter_ordnung, phase_versatz, bereich_min, bereich_max, amp,
+                 amp_min, amp_max, phase, konf, kanal):
         """
         :type fmin: int
         :type fmax: int
         :type df: int
+        :type raster: bool
         :type pixel: int
         :type dim: float
+        :type spektroskopie: bool
+        :type hysterese: bool
+        :type dcmin: float
+        :type dcmax: float
+        :type ddc: float
         :type mittelungen: int
         :param amp_fitfkt: Nummer der Fitfunktion für die Amplitude
         :type amp_fitfkt: int
@@ -35,7 +42,7 @@ class Parameter:
         :type amp_max: float
         :type phase: Fitparameter
         :type konf: str
-        ;:type version: int
+        :type kanal: str
         """
         if fmin >= fmax or amp_min >= amp_max:
             raise Fehler()
@@ -62,7 +69,7 @@ class Parameter:
         self.dim = dim
         """ Physikalische Dimension des Messbereichs """
         self.mittelungen = mittelungen
-        """ Anzahl der Mittelungen pro Rasterpunkt """
+        """ Anzahl der nachträglichen Mittelungen pro Rasterpunkt """
         self.nr_fkt_amp = amp_fitfkt
         """ Zum Fitten der Amplitude in Abhängigkeit zur Phase für jede einzelne Messung verwendete Funktion """
         self.nr_fkt_ph = ph_fitfkt
@@ -76,8 +83,6 @@ class Parameter:
 
         self.konf = konf
         """ Konfigurationseinstellungen """
-        self.version = version
-        """ Version des Speicherformats (0, 1: zeilenweise getrennt, 2: kombiniert) """
 
         self.df = df
         """ Abstand der Messwerte auf der Frequenzskala in Hz """
@@ -88,6 +93,33 @@ class Parameter:
         """ Linker Rand in Messpunkten für Fitbereich """
         self.bereich_rechts = int((bereich_max - fmax) // df)
         """ Rechter Rand in Messpunkten des Fitbereichs (negativ) """
+
+        self.raster = raster
+        """ Gridmodus, oder nicht """
+        self.spektroskopie = spektroskopie
+        """ DC-Spektroskopie, oder nicht """
+        self.hysterese = hysterese
+        """ DC-Hysterese, oder nicht """
+        self.dcmin = dcmin
+        """ Niedrigster DC-Wert in Volt """
+        self.dcmax = dcmax
+        """ Höchster DC-Wert in Volt """
+        self.ddc = ddc
+        """ Abstand der DC-Werte in Volt """
+        self.spektren = 0
+        """ Anzahl der in dieser Messung aufgezeichneten Spektren, die alle gefittet werden müssen """
+        if raster:
+            self.spektren = pixel ** 2
+        else:
+            self.spektren = 1
+        if spektroskopie:
+            if hysterese:
+                self.spektren *= int(2 * (dcmax - dcmin) / ddc + 1)
+            else:
+                self.spektren *= int((dcmax - dcmin) / ddc + 1)
+
+        self.kanal = kanal
+        """ Kanal der Tdms-Datei (elstat/elmech) """
 
 
 def index_freq(par, freq):

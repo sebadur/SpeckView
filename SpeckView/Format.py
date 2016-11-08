@@ -17,7 +17,7 @@ BYTE = '/byte'
 PERM = '/perm'
 
 
-def volume_data(c, inhalt, einheit_xy, einheit_z,
+def channel_data(c, inhalt, einheit_xy, einheit_z,
                 dim, pixel, dim_y=0, pixel_y=0,
                 titel=None):
     """
@@ -39,21 +39,46 @@ def volume_data(c, inhalt, einheit_xy, einheit_z,
         dim_y = dim
 
     # Neues, nicht initialisiertes Datenfeld erstellen:
-    vd = gwy.DataField(pixel, pixel_y, dim, dim_y, False)
-    vd.set_si_unit_xy(einheit_xy)
-    vd.set_si_unit_z(einheit_z)
+    cd = gwy.DataField(pixel, pixel_y, dim, dim_y, False)
+    cd.set_si_unit_xy(einheit_xy)
+    cd.set_si_unit_z(einheit_z)
 
     # Belegen:
     c_feld = c_double * (pixel * pixel_y)
-    zgr = c_feld.from_address(vd.get_data_pointer())
+    zgr = c_feld.from_address(cd.get_data_pointer())
     zgr[:] = inhalt
 
-    if not hasattr(c, 'n_sd'):
-        c.n_sd = 0
-    name = '/' + str(c.n_sd) + '/data'
-    c.set_object_by_name(name, vd)
+    if not hasattr(c, 'n_cd'):
+        c.n_cd = 0
+    name = '/' + str(c.n_cd) + '/data'
+    c.set_object_by_name(name, cd)
     if titel is not None:
         c.set_string_by_name(name + '/title', titel)
+    c.n_cd += 1
+
+
+def spectra_data(c, x, y, label_x, label_y):
+    """
+    :type c: gwy.Container
+    :type x: Sized
+    :type y: Sized
+    :type label_x: str
+    :type label_y: str
+    :type dim: float
+    """
+    x = [float(i) for i in x]
+    y = [float(i) for i in y]
+    # Neues, nicht initialisiertes Datenfeld erstellen:
+    sd = gwy.GraphModel()
+    graph = gwy.GraphCurveModel()
+    graph.set_data(x, y, len(x))
+    sd.add_curve(graph)
+
+    if not hasattr(c, 'n_sd'):
+        c.n_sd = 1
+    name = '0/graph/graph/' + str(c.n_sd)
+    c.set_object_by_name(name, sd)
+    c.set_boolean_by_name(name + '/visible', True)
     c.n_sd += 1
 
 

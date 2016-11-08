@@ -3,7 +3,7 @@
 @author: Sebastian Badur
 """
 
-from ConfigParser import ConfigParser, NoOptionError
+from ConfigParser import ConfigParser, NoSectionError, NoOptionError
 
 
 class DefaultParser(ConfigParser):
@@ -26,5 +26,5 @@ class DefaultParser(ConfigParser):
         try:
             # Komma und Punkt als Dezimaltrennzeichen erlauben (keine Tausendertrennzeichen):
             return float(self.get(section, option).replace(',', '.'))
-        except NoOptionError:
+        except (NoSectionError, NoOptionError):
             return 0.0

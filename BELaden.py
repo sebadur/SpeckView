@@ -10,9 +10,6 @@ plugin_type = 'FILE'
 plugin_desc = "Bandanregungsspektrum (.be)"
 
 
-DEBUG = False
-
-
 def detect_by_name(dateiname):
     """
     :type dateiname: str
@@ -50,13 +47,10 @@ def load(dateiname, modus=None):
     """
     if modus == gwy.RUN_INTERACTIVE:
         # PLUGIN AUSFÜHREN:
-        import sys
         import os
         from os.path import sep
         home = os.getenv('HOME')
         pygwy = home + sep + '.gwyddion' + sep + 'pygwy'
-        if not DEBUG:
-            sys.path.append(pygwy)
         svbe = pygwy + sep + 'SpeckView' + sep + 'BE'
 
         from SpeckView.BE.Laden import Laden
@@ -67,3 +61,7 @@ def load(dateiname, modus=None):
 
     else:  # Vorschau
         return None
+
+
+def save(daten, dateiname, modus=None):
+    gwy.gwy_app_file_save_as()

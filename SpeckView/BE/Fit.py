@@ -54,7 +54,7 @@ class Fit:
         :rtype: list[Ergebnis]
         """
         self._belegen()
-        return Pool().map(_fit_punkt, range(_par.pixel ** 2))
+        return Pool().map(_fit_punkt, range(_par.spektren))
 
     def vorschau(self, n):
         """

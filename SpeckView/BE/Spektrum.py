@@ -66,9 +66,8 @@ class Spektrum(gtk.Builder):
         :rtype: (numpy.multiarray.ndarray, numpy.multiarray.ndarray)
         """
         tdms = TDMS(self.par, self.par.konf)
-        self.amplitude = tdms.messwerte_lesen(self.par.konf.amp)
-        if self.par.nr_fkt_ph is not None:
-            self.phase = tdms.messwerte_lesen(self.par.konf.phase)
+        self.amplitude = tdms.messwerte_lesen(self.par.kanal, 'amp')
+        self.phase = tdms.messwerte_lesen(self.par.kanal, 'phase')
         self.x.set_range(1, self.par.pixel)
         self.y.set_range(1, self.par.pixel)
 

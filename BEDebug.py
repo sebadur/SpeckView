@@ -6,6 +6,7 @@
 import unittest
 
 import gwy
+
 plugin_type = 'PROCESS'
 plugin_desc = "Debugfunktionen"
 plugin_menu = "/SpeckView/BEDebug"
@@ -15,16 +16,28 @@ def run():
     pass
 
 
+pfad = "/home/sebadur/Dokumente/BaTiO3/2016-11-04/Messungen/"
+messung = pfad + "16-11-04-14-08-09.be"
+tdms = [
+    pfad + "amp0.tdms",
+    pfad + "amp1.tdms",
+    pfad + "amp2.tdms",
+    "A.ber doch nicht so!"
+]
+
+
 class DebugTest(unittest.TestCase):
     def test_name(self):
-        self.assertEqual(BERaster.detect_by_name(messung), 100)
+        import BELaden
+        self.assertEqual(BELaden.detect_by_name(messung), 100)
         for datei in tdms:
-            self.assertEqual(BERaster.detect_by_name(datei), 0)
+            self.assertEqual(BELaden.detect_by_name(datei), 0)
 
     def test_inhalt(self):
-        self.assertEqual(BERaster.detect_by_content(messung, "", "", 0), 100)
+        import BELaden
+        self.assertEqual(BELaden.detect_by_content(messung, "", "", 0), 100)
         for datei in tdms:
-            self.assertEqual(BERaster.detect_by_content(datei, "", "", 0), 0)
+            self.assertEqual(BELaden.detect_by_content(datei, "", "", 0), 0)
 
     def test_format(self):
         from SpeckView import Format
@@ -51,7 +64,7 @@ class DebugTest(unittest.TestCase):
         fit = Fit(
             Parameter(
                 fmin=50000, fmax=61000, df=1000,
-                pixel=1, dim=0.000001,
+                raster=True, pixel=1, dim=0.000001,
                 mittelungen=100,
                 amp_fitfkt=0, ph_fitfkt=3,
                 filter_breite=5, filter_ordnung=2,
@@ -60,7 +73,8 @@ class DebugTest(unittest.TestCase):
                 amp=Fitparameter(0.001, 1000, 0, 10),
                 amp_min=0.001, amp_max=1000,
                 phase=Fitparameter(0.00, 1000, 0, 1000),
-                konf=None, version=0
+                spektroskopie=False, hysterese=False, dcmax=0, dcmin=0, ddc=0,
+                konf='', kanal='elstat'
             ),
             numpy.array([[0, 0, 1, 1, 5, 10, 5, 1, 1, 0, 0]]),
             numpy.array([[180, 179, 175, 174, 90, 0, -90, -174, -175, -179, -180]]),
@@ -73,20 +87,6 @@ class DebugTest(unittest.TestCase):
         self.assertAlmostEqual(fit.untergrund, 0)
 
     def test_gui(self):
-        BERaster.load(messung, gwy.RUN_NONINTERACTIVE)
-        BERaster.load(messung, gwy.RUN_INTERACTIVE)
-
-
-if __name__ == '__main__':
-    import BERaster
-    BERaster.DEBUG = True
-    pfad = "/home/sebadur/Dokumente/BaTiO3/2016-03-08-R/"
-    messung = pfad + "16-03-08-11-16-50.ber"
-    tdms = [
-        pfad + "amp0.tdms",
-        pfad + "amp1.tdms",
-        pfad + "amp2.tdms",
-        "A.ber doch nicht so!"
-    ]
-
-    unittest.main()
+        import BELaden
+        BELaden.load(messung, gwy.RUN_NONINTERACTIVE)
+        BELaden.load(messung, gwy.RUN_INTERACTIVE)

@@ -6,7 +6,6 @@
 from os.path import sep
 import numpy
 from nptdms import TdmsFile
-from multiprocessing import Pool
 
 
 class TDMS:
@@ -18,8 +17,9 @@ class TDMS:
         self.par = par
         self.konf = konf
 
-    def messwerte_lesen(self, typ):
+    def messwerte_lesen(self, kanal, typ):
         """
+        :type kanal: str
         :type typ: str
         :rtype: numpy.multiarray.ndarray
         """
@@ -28,37 +28,24 @@ class TDMS:
         _typ = typ
 
         tdms = TdmsFile(_par.konf.rsplit('.be', 1)[0] + '.tdms')
-        return _lade_tdms(kanal=tdms.object('elstat', typ))
+        return _lade_tdms(kanal=tdms.object(kanal, typ))
 
 _par = None
 """ :type: SpeckView.BE.Parameter.Parameter """
 _typ = ''
 
 
-def _lade_zeile(y):
-    """
-    :type y: int
-    :rtype: numpy.multiarray.ndarray
-    """
-    return _lade_tdms(
-        TdmsFile(_par.konf.verzeichnis + sep + _typ + str(y) + '.tdms').object(_par.konf.gruppe, _par.konf.kanal),
-        dim=1
-    )
-
-
-def _lade_tdms(kanal, dim=2):
+def _lade_tdms(kanal):
     """
     :type kanal: nptdms.TdmsObject
-    :type dim: int
     :rtype: numpy.multiarray.ndarray
     """
-    pixel = _par.pixel ** dim
     messpunkte = _par.messpunkte
     mittelungen = _par.mittelungen
 
-    daten = numpy.zeros((pixel, messpunkte))
+    daten = numpy.zeros((_par.spektren, messpunkte))
 
-    for n in range(pixel):
+    for n in range(_par.spektren):
         for durchlauf in range(mittelungen):
             try:
                 """
