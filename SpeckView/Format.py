@@ -17,9 +17,7 @@ BYTE = '/byte'
 PERM = '/perm'
 
 
-def channel_data(c, inhalt, einheit_xy, einheit_z,
-                dim, pixel, dim_y=0, pixel_y=0,
-                titel=None):
+def channel_data(c, inhalt, einheit_xy, einheit_z, dim, pixel, dim_y=0, pixel_y=0, titel=None):
     """
     :type c: gwy.Container
     :type inhalt: list
@@ -28,7 +26,7 @@ def channel_data(c, inhalt, einheit_xy, einheit_z,
     :type dim: float
     :type pixel: int
     :param dim_y: Wenn die Dimension von x und y verschieden sind
-    :type dim_y: int
+    :type dim_y: float
     :param pixel_y: Für nicht quadratische Datenfelder
     :type pixel_y: int
     :type titel: str
