@@ -30,7 +30,6 @@ Made by these contributors in context of studies for the Justus-Liebig-Universit
 
 - Valon Lushta
 - Sebastian Badur
-- Jalmar Tschakert
 
 This software is part of active studies of science and may only be used or cited in scientific behave. Furthermore we
 give no warranty of this software not harming in any way.

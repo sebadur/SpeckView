@@ -78,7 +78,7 @@ class DebugTest(unittest.TestCase):
             ),
             numpy.array([[0, 0, 1, 1, 5, 10, 5, 1, 1, 0, 0]]),
             numpy.array([[180, 179, 175, 174, 90, 0, -90, -174, -175, -179, -180]]),
-            lambda: None
+            lambda (n): None
         ).vorschau(0)
         self.assertAlmostEqual(fit.amp, 9, delta=1)
         self.assertAlmostEqual(fit.guete_amp, 52, delta=2)

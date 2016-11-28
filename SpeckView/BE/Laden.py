@@ -8,6 +8,7 @@ import numpy
 from gwy import Container
 from os.path import sep
 from tkMessageBox import askyesno, showinfo
+from multiprocessing import Process, Queue
 
 from SpeckView import Format
 from SpeckView.Plotter import Plotter
@@ -100,7 +101,7 @@ class Laden(gtk.Builder):
         frequenz = frequenzen(par)
         if self.amplitude is None:
             self.messwerte_lesen(par)
-        erg = Fit(par, self.amplitude, self.phase, self.fortschritt.pulse).vorschau(n)
+        erg = Fit(par, self.amplitude, self.phase, lambda(n): None).vorschau(n)
 
         def plot(messung, fit):
             """
@@ -176,19 +177,37 @@ class Laden(gtk.Builder):
 
         # Fortschrittsanzeige:
         self.fortschritt.set_value(0)
-        self.fortschritt.set_pulse_step(1 / par.pixel)
+
+        def tick(q, puls):
+            """
+            :type q: multiprocessing.Queue
+            :type puls: (int) -> None
+            """
+            weiter = True
+            x = 0.0
+            while True:
+                gtk.main_iteration_do(True)
+                try:
+                    if q.get_nowait() is False:
+                        return
+                    x += 1.0 / par.spektren
+                    puls(x)
+                except Exception:
+                    pass
+
         self.ui.hide_all()
         self.ff.show_all()
-        while gtk.events_pending():
-            gtk.main_iteration_do(True)
-        pass
+        q = Queue()
+        p = Process(target=tick, args=(q, self.fortschritt.set_fraction))
+        p.start()
 
         # Messwerte einlesen:
         self.messwerte_lesen(par)
 
         # Fitten:
-        fit = Fit(par, self.amplitude, self.phase, self.fortschritt.pulse)
+        fit = Fit(par, self.amplitude, self.phase, q.put)
         erg = fit.start()
+        del self.amplitude, self.phase, fit
 
         # Gwyddion-Datenfeld:
         self.container = Container()
@@ -224,26 +243,27 @@ class Laden(gtk.Builder):
                 )
             datei.close()
             showinfo("Gespeichert", "Fit gespeichert in " + datei.name)
-            self.ff.hide_all()
-            gtk.main_quit()
-            return
 
-        anlegen([n.amp for n in erg], "Amplitude", 'V')
-        anlegen([n.phase for n in erg], "Phase", '°')
-        anlegen([n.resfreq for n in erg], "Resonanzfrequenz", 'Hz')
-        anlegen([n.guete_amp for n in erg], u"Güte (Amplitudenfit)", '')
-        anlegen([n.amp_fhlr for n in erg], "Fehler Amp.", 'V')
-        anlegen([n.phase_fhlr for n in erg], "Fehler Phase", '°')
-        anlegen([n.resfreq_fhlr for n in erg], "Fehler Resfreq.", 'Hz')
-        anlegen([n.guete_amp_fhlr for n in erg], u"Fehler Güte (Ampfit.)", '')
-        anlegen([n.guete_ph for n in erg], u"Güte (Phasenfit)", '')
-        anlegen([n.untergrund for n in erg], "Untergrund", 'V')
-        anlegen([n.phase_rel for n in erg], "Phasenversatz", '°')
+        else:
+            anlegen([n.amp for n in erg], "Amplitude", 'V')
+            anlegen([n.phase for n in erg], "Phase", '°')
+            anlegen([n.resfreq for n in erg], "Resonanzfrequenz", 'Hz')
+            anlegen([n.guete_amp for n in erg], u"Güte (Amplitudenfit)", '')
+            anlegen([n.amp_fhlr for n in erg], "Fehler Amp.", 'V')
+            anlegen([n.phase_fhlr for n in erg], "Fehler Phase", '°')
+            anlegen([n.resfreq_fhlr for n in erg], "Fehler Resfreq.", 'Hz')
+            anlegen([n.guete_amp_fhlr for n in erg], u"Fehler Güte (Ampfit.)", '')
+            anlegen([n.guete_ph for n in erg], u"Güte (Phasenfit)", '')
+            anlegen([n.untergrund for n in erg], "Untergrund", 'V')
+            anlegen([n.phase_rel for n in erg], "Phasenversatz", '°')
 
-        Format.set_custom(self.container, ERGEBNIS, erg)
-        Format.set_custom(self.container, PARAMETER, par)
+            Format.set_custom(self.container, ERGEBNIS, erg)
+            Format.set_custom(self.container, PARAMETER, par)
 
         self.ff.hide_all()
+        q.put(False)
+        p.join()
+        q.close()
         gtk.main_quit()
 
     # Hilfsfunktionen (für Typentreue):

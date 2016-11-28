@@ -22,7 +22,7 @@ class Fit:
         :type par: SpeckView.BE.Parameter.Parameter
         :type amplitude_voll: numpy.multiarray.ndarray
         :type phase_voll: numpy.multiarray.ndarray
-        :type puls: () -> None
+        :type puls: (int) -> None
         """
         self.par = par
         self.amplitude_voll = amplitude_voll
@@ -77,7 +77,7 @@ _instanz = None
 """ :type: Fit """
 _weiter = True
 _puls = None
-""" :type: () -> None """
+""" :type: (int) -> None """
 
 _fit_genauigkeit = {
     'ftol': 1e-9,  # Geringe Toleranzen
@@ -111,6 +111,8 @@ def _bereich(feld):
 
 
 def _fit_punkt(n):
+    _puls(n)
+    return Ergebnis(0,0,0,0,0,0,0,0,0,0,0)
     """
     :type n: int
     :return: Gefittete Amplitude und gefittete oder geglättete Phase im Bereich um Resonanzfrequenz +/- Versatz
@@ -148,7 +150,7 @@ def _fit_punkt(n):
         fit_kws=_fit_genauigkeit
     )
 
-    # TODO puls()
+    _puls(n)
     # Wenn keine Phase gefittet werden soll:
     if _mod_ph is KEIN_FIT:
         return Ergebnis(
