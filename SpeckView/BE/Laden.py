@@ -5,11 +5,12 @@
 
 import gtk
 import numpy
-from gwy import Container
+from gwy import Container, SIUnit
 from os.path import sep
-from tkMessageBox import askyesno, showinfo
-from multiprocessing import Process, Queue
+from multiprocessing import Queue
+from multiprocessing.queues import Empty
 
+from SpeckView.Dialog import Dialog
 from SpeckView import Format
 from SpeckView.Plotter import Plotter
 from SpeckView.Parser import DefaultParser
@@ -24,7 +25,6 @@ from TDMS import TDMS
 # Relevante Sektionen des BE-Formats Version 3
 sgl = 'Signal'
 sgn = 'Signalgenerator'
-# usb = 'USB'
 man = 'Manipulation'
 rst = 'Raster'
 
@@ -36,7 +36,8 @@ class Laden(gtk.Builder):
         """
         self.konf = konf
 
-        if askyesno('Kanal', 'elstat (Ja) oder elmech (Nein)?'):
+        self.sv = svbe + sep + '..'
+        if Dialog(self.sv).frage("Kanal", "Den gewünschten Kanal wählen:", "elstat.", "elmech."):
             self.kanal = 'elstat'
         else:
             self.kanal = 'elmech'
@@ -175,38 +176,29 @@ class Laden(gtk.Builder):
     def fit_starten(self, _):
         par = self.fitparameter()
 
-        # Fortschrittsanzeige:
-        self.fortschritt.set_value(0)
-
-        def tick(q, puls):
-            """
-            :type q: multiprocessing.Queue
-            :type puls: (int) -> None
-            """
-            weiter = True
-            x = 0.0
-            while True:
-                gtk.main_iteration_do(True)
-                try:
-                    if q.get_nowait() is False:
-                        return
-                    x += 1.0 / par.spektren
-                    puls(x)
-                except Exception:
-                    pass
+        # Messwerte einlesen:
+        self.messwerte_lesen(par)
 
         self.ui.hide_all()
         self.ff.show_all()
         q = Queue()
-        p = Process(target=tick, args=(q, self.fortschritt.set_fraction))
-        p.start()
-
-        # Messwerte einlesen:
-        self.messwerte_lesen(par)
-
         # Fitten:
         fit = Fit(par, self.amplitude, self.phase, q.put)
         erg = fit.start()
+
+        x = 0.0
+        while not erg.ready():
+            gtk.main_iteration_do(False)
+            try:
+                q.get_nowait()
+                x += 1.0 / par.spektren
+                self.fortschritt.set_fraction(x)
+            except Empty:
+                pass
+        q.close()
+        erg = erg.get()
+        """ :type: list[Ergebnis] """
+
         del self.amplitude, self.phase, fit
 
         # Gwyddion-Datenfeld:
@@ -217,8 +209,8 @@ class Laden(gtk.Builder):
                 Format.channel_data(
                     c=self.container,
                     inhalt=inhalt,
-                    einheit_xy=Format.si_unit('m'),
-                    einheit_z=Format.si_unit(einheit),
+                    einheit_xy=SIUnit('m'),
+                    einheit_z=SIUnit(einheit),
                     titel=titel,
                     dim=par.dim,
                     pixel=par.pixel  # TODO geht nur, wenn kein Spektrum
@@ -242,7 +234,7 @@ class Laden(gtk.Builder):
                     str(erg[n].guete_amp_fhlr) + ',' + str(erg[n].phase) + '\n'
                 )
             datei.close()
-            showinfo("Gespeichert", "Fit gespeichert in " + datei.name)
+            Dialog(self.sv).info("Gespeichert", "Fit gespeichert in " + datei.name)
 
         else:
             anlegen([n.amp for n in erg], "Amplitude", 'V')
@@ -261,9 +253,6 @@ class Laden(gtk.Builder):
             Format.set_custom(self.container, PARAMETER, par)
 
         self.ff.hide_all()
-        q.put(False)
-        p.join()
-        q.close()
         gtk.main_quit()
 
     # Hilfsfunktionen (für Typentreue):

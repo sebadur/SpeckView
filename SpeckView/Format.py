@@ -3,7 +3,6 @@
 @author: Sebastian Badur
 """
 
-# noinspection PyUnresolvedReferences
 import gwy
 from ctypes import c_double, c_byte
 import cPickle
@@ -62,7 +61,6 @@ def spectra_data(c, x, y, label_x, label_y):
     :type y: Sized
     :type label_x: str
     :type label_y: str
-    :type dim: float
     """
     x = [float(i) for i in x]
     y = [float(i) for i in y]
@@ -78,16 +76,6 @@ def spectra_data(c, x, y, label_x, label_y):
     c.set_object_by_name(name, sd)
     c.set_boolean_by_name(name + '/visible', True)
     c.n_sd += 1
-
-
-def si_unit(einheit):
-    """
-    :type einheit: str
-    :rtype: gwy.SIUnit
-    """
-    si = gwy.SIUnit()
-    si.set_from_string(einheit)
-    return si
 
 
 def set_custom(c, name, objekt, permanent=True):

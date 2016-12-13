@@ -9,7 +9,7 @@ import gwy
 
 plugin_type = 'PROCESS'
 plugin_desc = "Debugfunktionen"
-plugin_menu = "/SpeckView/BEDebug"
+plugin_menu = "/Bandanregung/Debug"
 
 
 def run():

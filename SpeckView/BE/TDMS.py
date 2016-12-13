@@ -3,7 +3,6 @@
 @author: Sebastian Badur
 """
 
-from os.path import sep
 import numpy
 from nptdms import TdmsFile
 

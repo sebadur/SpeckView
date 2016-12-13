@@ -5,8 +5,8 @@
 
 import gwy
 plugin_type = 'PROCESS'
-plugin_desc = "Darstellung des Spektrums an einem Ort"
-plugin_menu = "/Bandanregung/Spektren darstellen"
+plugin_desc = "Zwei Bildkanäle über einen neutralen Bereich gewichtet subtrahieren"
+plugin_menu = "/Bandanregung/Differenz bilden"
 
 
 def run():

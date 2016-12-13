@@ -51,10 +51,10 @@ class Fit:
         """
         Startet den Fit. Alle Zuweisungen wurden durch den Konstruktor vorgenommen.
         :return: Gefittete Amplitude und gefittete oder geglättete Phase im Bereich um Resonanzfrequenz +/- Versatz
-        :rtype: list[Ergebnis]
+        :rtype: multiprocessing.pool.AsyncResult
         """
         self._belegen()
-        return Pool().map(_fit_punkt, range(_par.spektren))
+        return Pool().map_async(_fit_punkt, range(_par.spektren))
 
     def vorschau(self, n):
         """
@@ -111,8 +111,6 @@ def _bereich(feld):
 
 
 def _fit_punkt(n):
-    _puls(n)
-    return Ergebnis(0,0,0,0,0,0,0,0,0,0,0)
     """
     :type n: int
     :return: Gefittete Amplitude und gefittete oder geglättete Phase im Bereich um Resonanzfrequenz +/- Versatz
