@@ -74,7 +74,7 @@ class DebugTest(unittest.TestCase):
                 amp_min=0.001, amp_max=1000,
                 phase=Fitparameter(0.00, 1000, 0, 1000),
                 spektroskopie=False, hysterese=False, dcmax=0, dcmin=0, ddc=0,
-                konf='', kanal='elstat'
+                konf='', kanal='elstat', version=3
             ),
             numpy.array([[0, 0, 1, 1, 5, 10, 5, 1, 1, 0, 0]]),
             numpy.array([[180, 179, 175, 174, 90, 0, -90, -174, -175, -179, -180]]),

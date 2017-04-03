@@ -12,7 +12,7 @@ class Parameter:
     """ Alle für den Fit nötigen Messparameter """
     def __init__(self, fmin, fmax, df, raster, pixel, dim, spektroskopie, hysterese, dcmin, dcmax, ddc, mittelungen,
                  amp_fitfkt, ph_fitfkt, filter_breite, filter_ordnung, phase_versatz, bereich_min, bereich_max, amp,
-                 amp_min, amp_max, phase, konf, kanal):
+                 amp_min, amp_max, phase, konf, kanal, version):
         """
         :type fmin: int
         :type fmax: int
@@ -43,6 +43,7 @@ class Parameter:
         :type phase: Fitparameter
         :type konf: str
         :type kanal: str
+        :type version: int
         """
         if fmin >= fmax or amp_min >= amp_max:
             raise Fehler()
@@ -83,6 +84,9 @@ class Parameter:
 
         self.konf = konf
         """ Konfigurationseinstellungen """
+
+        self.version = version
+        """ Version der Speicherdatei (Standard = 3) """
 
         self.df = df
         """ Abstand der Messwerte auf der Frequenzskala in Hz """

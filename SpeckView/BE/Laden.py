@@ -23,6 +23,7 @@ from TDMS import TDMS
 
 
 # Relevante Sektionen des BE-Formats Version 3
+opt = 'BE'
 sgl = 'Signal'
 sgn = 'Signalgenerator'
 man = 'Manipulation'
@@ -35,12 +36,6 @@ class Laden(gtk.Builder):
         :type konf: str
         """
         self.konf = konf
-
-        self.sv = svbe + sep + '..'
-        if Dialog(self.sv).frage("Kanal", "Den gewünschten Kanal wählen:", "elstat.", "elmech."):
-            self.kanal = 'elstat'
-        else:
-            self.kanal = 'elmech'
 
         gtk.Builder.__init__(self)
 
@@ -70,6 +65,16 @@ class Laden(gtk.Builder):
         self.parser = DefaultParser()
         self.parser.read(konf)
         self.parser.getint = lambda sektion, option: int(self.parser.get(sektion, option).rsplit(',', 1)[0])
+
+        self.version = self.parser.getint(opt, 'Version')
+        if self.version >= 3:
+            self.sv = svbe + sep + '..'
+            if Dialog(self.sv).frage("Kanal", "Den gewünschten Kanal wählen:", "elstat.", "elmech."):
+                self.kanal = 'elstat'
+            else:
+                self.kanal = 'elmech'
+        else:
+            self.kanal = 'Untitled'
 
         self.pixel = self.spinbutton('pixel')
         self.pixel.set_value(self.parser.getint(rst, 'Pixel'))
@@ -159,7 +164,8 @@ class Laden(gtk.Builder):
                 off_max=self.spinbutton('phase_off_max').get_value()
             ),
             konf=self.konf,
-            kanal=self.kanal
+            kanal=self.kanal,
+            version=self.version
         )
 
     def messwerte_lesen(self, par):

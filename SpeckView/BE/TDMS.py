@@ -4,6 +4,7 @@
 """
 
 import numpy
+import os
 from nptdms import TdmsFile
 
 
@@ -26,8 +27,20 @@ class TDMS:
         _par = self.par
         _typ = typ
 
-        tdms = TdmsFile(_par.konf.rsplit('.be', 1)[0] + '.tdms')
-        return _lade_tdms(kanal=tdms.object(kanal, typ))
+        if _par.version >= 3:
+            tdms = TdmsFile(_par.konf.rsplit('.be', 1)[0] + '.tdms')
+            return _lade_tdms(kanal=tdms.object(kanal, typ))
+        else:
+            pfad = _par.konf.rsplit(os.sep, 1)[0] + os.sep + typ
+            for n in range(1, _par.pixel + 1):
+                tdms = TdmsFile(pfad + str(n) + '.tdms')
+                dat = _lade_tdms(kanal=tdms.object(kanal, 'Untitled'))
+                if n == 1:
+                    daten = dat
+                else:
+                    daten = numpy.append(daten, dat, axis=0)
+            return daten
+
 
 _par = None
 """ :type: SpeckView.BE.Parameter.Parameter """
@@ -41,10 +54,14 @@ def _lade_tdms(kanal):
     """
     messpunkte = _par.messpunkte
     mittelungen = _par.mittelungen
+    if _par.version >= 3:
+        spektren = _par.spektren
+    else:
+        spektren = _par.pixel
 
-    daten = numpy.zeros((_par.spektren, messpunkte))
+    daten = numpy.zeros((spektren, messpunkte))
 
-    for n in range(_par.spektren):
+    for n in range(spektren):
         for durchlauf in range(mittelungen):
             try:
                 """

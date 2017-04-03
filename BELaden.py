@@ -32,7 +32,7 @@ def detect_by_content(dateiname, kopf, s, g):
     try:
         parser = ConfigParser()
         parser.read(dateiname)
-        if parser.getint('BE', 'Version') == 3:
+        if parser.getint('BE', 'Version') <= 3:
             return 100
     except Error:
         pass
