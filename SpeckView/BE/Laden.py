@@ -102,12 +102,12 @@ class Laden(gtk.Builder):
         gtk.main()
 
     def vorschau(self, _):
-        n = self.spinbutton('vorschau_spektren').get_value()
+        n = self.spinbutton('vorschau_spektren').get_value_as_int()
         par = self.fitparameter()
         frequenz = frequenzen(par)
         if self.amplitude is None:
             self.messwerte_lesen(par)
-        erg = Fit(par, self.amplitude, self.phase, lambda(n): None).vorschau(n)
+        erg = Fit(par, self.amplitude, self.phase, lambda(i): None).vorschau(n)
 
         def plot(messung, fit):
             """
