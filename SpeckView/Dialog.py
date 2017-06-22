@@ -4,13 +4,13 @@
 """
 
 import gtk
-from os import sep
+from os import path
 
 
 class Dialog(gtk.Builder):
     def __init__(self, sv):
         gtk.Builder.__init__(self)
-        self.add_from_file(sv + sep + 'dialog.glade')
+        self.add_from_file(path.join(sv, 'dialog.glade'))
         self.antwort = False
         self.dialog = self.get_object('dialog')
         """ :type: gtk.Window """
