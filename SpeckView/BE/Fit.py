@@ -4,6 +4,7 @@
 @author: Valon Lushta
 """
 
+import os
 import numpy
 from lmfit import Parameters, Model
 from scipy.signal import savgol_filter
@@ -54,7 +55,16 @@ class Fit:
         :rtype: multiprocessing.pool.AsyncResult
         """
         self._belegen()
-        return Pool().map_async(_fit_punkt, range(_par.spektren))
+        if hasattr(os, 'fork'):  # Multiprozessierung, wenn möglich
+            return Pool().map_async(_fit_punkt, range(_par.spektren))
+        else:  # Windows (langsamer)
+            dat = map(_fit_punkt, range(_par.spektren))
+            class AsyncResult:
+                pass
+            erg = AsyncResult()
+            erg.get = lambda: dat
+            erg.ready = lambda: True
+            return erg
 
     def vorschau(self, n):
         """

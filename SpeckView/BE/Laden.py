@@ -3,10 +3,10 @@
 @author: Sebastian Badur
 """
 
+import os
 import gtk
 import numpy
 from gwy import Container, SIUnit
-from os.path import sep
 from multiprocessing import Queue
 from multiprocessing.queues import Empty
 
@@ -47,7 +47,7 @@ class Laden(gtk.Builder):
         self.phase = None
         """ :type: numpy.multiarray.ndarray """
 
-        self.add_from_file(svbe + sep + 'laden.glade')
+        self.add_from_file(os.path.join(svbe, 'laden.glade'))
 
         self.ui = self.window('fenster_laden')
         self.ff = self.window('fenster_fortschritt')
@@ -68,7 +68,7 @@ class Laden(gtk.Builder):
 
         self.version = self.parser.getint(opt, 'Version')
         if self.version >= 3:
-            self.sv = svbe + sep + '..'
+            self.sv = os.path.dirname(svbe)
             if Dialog(self.sv).frage("Kanal", "Den gewünschten Kanal wählen:", "elstat.", "elmech."):
                 self.kanal = 'elstat'
             else:
@@ -203,7 +203,8 @@ class Laden(gtk.Builder):
                 self.fortschritt.set_fraction(x)
             except Empty:
                 pass
-        q.close()
+        if hasattr(os, 'fork'):
+            q.close()
         erg = erg.get()
         """ :type: list[Ergebnis] """
 
