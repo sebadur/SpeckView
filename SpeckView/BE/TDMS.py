@@ -69,7 +69,8 @@ def _lade_tdms(kanal):
                 UND
                 Begrenzung des Fitbereichs (zur Eliminierung von parasitären Frequenzpeaks) nach Angabe in GUI
                 """
-                von = n * messpunkte * mittelungen + durchlauf * messpunkte
+                #von = ((3*n+1) * mittelungen + durchlauf) * messpunkte
+                von = (n * mittelungen + durchlauf) * messpunkte
                 bis = von + messpunkte
                 daten[n] += kanal.data[von:bis]
             except ValueError:

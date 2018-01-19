@@ -26,8 +26,10 @@ from TDMS import TDMS
 opt = 'BE'
 sgl = 'Signal'
 sgn = 'Signalgenerator'
-man = 'Manipulation'
+mac = 'AC-Manipulation'
+mdc = 'DC-Manipulation'
 rst = 'Raster'
+usb = 'USB'
 
 
 class Laden(gtk.Builder):
@@ -64,11 +66,18 @@ class Laden(gtk.Builder):
 
         self.parser = DefaultParser()
         self.parser.read(konf)
-        self.parser.getint = lambda sektion, option: int(self.parser.get(sektion, option).rsplit(',', 1)[0])
 
         self.version = self.parser.getint(opt, 'Version')
-        if self.version >= 3:
-            self.sv = os.path.dirname(svbe)
+        self.sv = os.path.dirname(svbe)
+        if self.version == 4:
+            if Dialog(self.sv).frage("Kanal", "Den gewünschten Kanal wählen:", "NF", "HF"):
+                if Dialog(self.sv).frage("Kanal", "Bias-Spannung positiv oder negativ?", "positiv", "negativ"):
+                    self.kanal = 'nfp'
+                else:
+                    self.kanal = 'nfm'
+            else:
+                self.kanal = 'hf'
+        elif self.version == 3:
             if Dialog(self.sv).frage("Kanal", "Den gewünschten Kanal wählen:", "elstat.", "elmech."):
                 self.kanal = 'elstat'
             else:
@@ -104,8 +113,10 @@ class Laden(gtk.Builder):
         gtk.main()
 
     def vorschau(self, _):
-        n = self.spinbutton('vorschau_spektren').get_value_as_int()
         par = self.fitparameter()
+        regler = self.spinbutton('vorschau_spektren')
+        regler.set_range(1, par.spektren)
+        n = regler.get_value_as_int() - 1
         frequenz = frequenzen(par)
         if self.amplitude is None:
             self.messwerte_lesen(par)
@@ -138,11 +149,11 @@ class Laden(gtk.Builder):
             raster=self.parser.getboolean(rst, 'Raster'),
             pixel=self.pixel.get_value_as_int(),
             dim=self.dim.get_value(),
-            spektroskopie=self.parser.getboolean(man, 'Spektroskopie'),
-            hysterese=self.parser.getboolean(man, 'Hysterese'),
-            dcmin=self.parser.getfloat(man, 'Umin'),
-            dcmax=self.parser.getfloat(man, 'Umax'),
-            ddc=self.parser.getfloat(man, 'dU'),
+            spektroskopie=self.parser.getboolean(mdc, 'Spektroskopie'),
+            hysterese=self.parser.getboolean(mdc, 'Hysterese'),
+            dcmin=self.parser.getfloat(mdc, 'Umin'),
+            dcmax=self.parser.getfloat(mdc, 'Umax'),
+            ddc=self.parser.getfloat(mdc, 'dU'),
             mittelungen=self.mittelungen.get_value_as_int(),
             amp_fitfkt=self.combobox('methode_amp').get_active(),
             ph_fitfkt=self.combobox('methode_phase').get_active(),
@@ -208,6 +219,16 @@ class Laden(gtk.Builder):
         erg = erg.get()
         """ :type: list[Ergebnis] """
 
+        if not par.raster and not par.spektroskopie:
+            datei = open(par.konf.rsplit('.be', 1)[0] + ".amp", 'w')
+            datei.write('f/Hz,A/V\n')
+            for n in range(self.amplitude.size):
+                datei.write(
+                    str(par.fmin + n * par.df) + ',' + str(self.amplitude[0, n]) + '\n'
+                )
+            datei.close()
+            Dialog(self.sv).info("Gespeichert", "Resonanzkurve gespeichert in " + datei.name)
+
         del self.amplitude, self.phase, fit
 
         # Gwyddion-Datenfeld:
@@ -232,20 +253,7 @@ class Laden(gtk.Builder):
                     label_x='', label_y=''
                 )
 
-        if par.spektroskopie:  # TODO Notlösung entfernen
-            datei = open(par.konf.rsplit('.be', 1)[0] + ".fit", 'w')
-            dc = hysterese(par.dcmin, par.dcmax, par.ddc)
-            datei.write('DC/V,A/V,dA/V,f0/Hz,df0/Hz,Q,dQ,Phase\n')
-            for n in range(par.spektren):
-                datei.write(
-                    str(dc[n]) + ',' + str(erg[n].amp) + ',' + str(erg[n].amp_fhlr) + ',' +
-                    str(erg[n].resfreq) + ',' + str(erg[n].resfreq_fhlr) + ',' + str(erg[n].guete_amp) + ',' +
-                    str(erg[n].guete_amp_fhlr) + ',' + str(erg[n].phase) + '\n'
-                )
-            datei.close()
-            Dialog(self.sv).info("Gespeichert", "Fit gespeichert in " + datei.name)
-
-        else:
+        if par.raster:
             anlegen([n.amp for n in erg], "Amplitude", 'V')
             anlegen([n.phase for n in erg], "Phase", '°')
             anlegen([n.resfreq for n in erg], "Resonanzfrequenz", 'Hz')
@@ -260,6 +268,22 @@ class Laden(gtk.Builder):
 
             Format.set_custom(self.container, ERGEBNIS, erg)
             Format.set_custom(self.container, PARAMETER, par)
+
+        else:  # TODO Notlösung entfernen
+            datei = open(par.konf.rsplit('.be', 1)[0] + ".fit", 'w')
+            if par.spektroskopie:
+                dc = hysterese(par.dcmin, par.dcmax, par.ddc)
+            else:
+                dc = [self.parser.getfloat(usb, 'Cantilever')]
+            datei.write('DC/V,A/V,dA/V,f0/Hz,df0/Hz,Q,dQ,Phase\n')
+            for n in range(par.spektren):
+                datei.write(
+                    str(dc[n]) + ',' + str(erg[n].amp) + ',' + str(erg[n].amp_fhlr) + ',' +
+                    str(erg[n].resfreq) + ',' + str(erg[n].resfreq_fhlr) + ',' + str(erg[n].guete_amp) + ',' +
+                    str(erg[n].guete_amp_fhlr) + ',' + str(erg[n].phase) + '\n'
+                )
+            datei.close()
+            Dialog(self.sv).info("Gespeichert", "Fit gespeichert in " + datei.name)
 
         self.ff.hide_all()
         gtk.main_quit()

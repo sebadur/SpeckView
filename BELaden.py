@@ -32,7 +32,7 @@ def detect_by_content(dateiname, kopf, s, g):
     try:
         parser = ConfigParser()
         parser.read(dateiname)
-        if parser.getint('BE', 'Version') <= 3:
+        if parser.getint('BE', 'Version') <= 4:
             return 100
     except Error:
         pass
@@ -60,12 +60,13 @@ def load(dateiname, modus=None):
         from SpeckView.BE.Laden import Laden
         geladen = Laden(path.relpath(dateiname), svbe)
 
-        # TODO Test: Befreien der reservierten Resourcen (Gwyddion-Bug?)
-        return geladen.container
+        daten = geladen.container
+        del geladen
+        return daten
 
     else:  # Vorschau
         return None
 
 
 def save(daten, dateiname, modus=None):
-    gwy.gwy_app_file_save_as()
+    return False

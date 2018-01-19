@@ -13,13 +13,13 @@ class DefaultParser(ConfigParser):
     def getboolean(self, section, option):
         try:
             return ConfigParser.getboolean(self, section, option)
-        except NoOptionError:
+        except (NoSectionError, NoOptionError):
             return False
 
     def getint(self, section, option):
         try:
-            return ConfigParser.getint(self, section, option)
-        except NoOptionError:
+            return int(ConfigParser.get(self, section, option).split(',')[0])
+        except (NoSectionError, NoOptionError):
             return 0
 
     def getfloat(self, section, option):
