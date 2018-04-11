@@ -26,7 +26,7 @@ def load(dateiname, modus=None):
 def save(daten, dateiname, *args):
     from os.path import basename
     import string
-    dateiname = string.rstrip(dateiname, ".tex")
+    dateiname = string.rsplit(dateiname, ".tex", 1)[0]
 
     feld = '/' + str(gwy.gwy_app_data_browser_get_current(gwy.APP_DATA_FIELD_ID))
     zmin = daten.get_double_by_name(feld + '/base/min')

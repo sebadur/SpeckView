@@ -26,8 +26,7 @@ from TDMS import TDMS
 opt = 'BE'
 sgl = 'Signal'
 sgn = 'Signalgenerator'
-mac = 'AC-Manipulation'
-mdc = 'DC-Manipulation'
+man = 'Manipulation'
 rst = 'Raster'
 usb = 'USB'
 
@@ -78,6 +77,8 @@ class Laden(gtk.Builder):
             else:
                 self.kanal = 'hf'
         elif self.version == 3:
+            global man
+            man = 'AC-Manipulation'  # 'DC-Manipulation'
             if Dialog(self.sv).frage("Kanal", "Den gewünschten Kanal wählen:", "elstat.", "elmech."):
                 self.kanal = 'elstat'
             else:
@@ -149,11 +150,11 @@ class Laden(gtk.Builder):
             raster=self.parser.getboolean(rst, 'Raster'),
             pixel=self.pixel.get_value_as_int(),
             dim=self.dim.get_value(),
-            spektroskopie=self.parser.getboolean(mdc, 'Spektroskopie'),
-            hysterese=self.parser.getboolean(mdc, 'Hysterese'),
-            dcmin=self.parser.getfloat(mdc, 'Umin'),
-            dcmax=self.parser.getfloat(mdc, 'Umax'),
-            ddc=self.parser.getfloat(mdc, 'dU'),
+            spektroskopie=self.parser.getboolean(man, 'Spektroskopie'),
+            hysterese=self.parser.getboolean(man, 'Hysterese'),
+            dcmin=self.parser.getfloat(man, 'Umin'),
+            dcmax=self.parser.getfloat(man, 'Umax'),
+            ddc=self.parser.getfloat(man, 'dU'),
             mittelungen=self.mittelungen.get_value_as_int(),
             amp_fitfkt=self.combobox('methode_amp').get_active(),
             ph_fitfkt=self.combobox('methode_phase').get_active(),
@@ -253,7 +254,8 @@ class Laden(gtk.Builder):
                     label_x='', label_y=''
                 )
 
-        if par.raster:
+        if par.raster and not par.spektroskopie:
+            anlegen([n.amp / n.guete_amp for n in erg], "A0 " + self.kanal, 'V')
             anlegen([n.amp for n in erg], "Amplitude", 'V')
             anlegen([n.phase for n in erg], "Phase", '°')
             anlegen([n.resfreq for n in erg], "Resonanzfrequenz", 'Hz')
@@ -269,16 +271,22 @@ class Laden(gtk.Builder):
             Format.set_custom(self.container, ERGEBNIS, erg)
             Format.set_custom(self.container, PARAMETER, par)
 
-        else:  # TODO Notlösung entfernen
-            datei = open(par.konf.rsplit('.be', 1)[0] + ".fit", 'w')
-            if par.spektroskopie:
+        else:
+            datei = open(par.konf.rsplit('.be', 1)[0] + "-" + self.kanal + ".fit", 'w')
+            if par.spektroskopie and par.hysterese:
                 dc = hysterese(par.dcmin, par.dcmax, par.ddc)
+            elif par.spektroskopie:
+                dc = numpy.arange(par.dcmin, par.dcmax + par.ddc, par.ddc)
             else:
                 dc = [self.parser.getfloat(usb, 'Cantilever')]
-            datei.write('DC/V,A/V,dA/V,f0/Hz,df0/Hz,Q,dQ,Phase\n')
+            datei.write('DC/V,A0/V,dA0/V,A/V,dA/V,f0/Hz,df0/Hz,Q,dQ,Phase\n')
             for n in range(par.spektren):
+                amp = erg[n].amp
+                guete = erg[n].guete_amp
                 datei.write(
-                    str(dc[n]) + ',' + str(erg[n].amp) + ',' + str(erg[n].amp_fhlr) + ',' +
+                    str(dc[n % len(dc)]) + ',' + str(amp / guete) + ',' +
+                    str(1 / guete * erg[n].amp_fhlr + amp / guete / guete * erg[n].guete_amp_fhlr) + ',' +
+                    str(erg[n].amp) + ',' + str(erg[n].amp_fhlr) + ',' +
                     str(erg[n].resfreq) + ',' + str(erg[n].resfreq_fhlr) + ',' + str(erg[n].guete_amp) + ',' +
                     str(erg[n].guete_amp_fhlr) + ',' + str(erg[n].phase) + '\n'
                 )

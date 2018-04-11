@@ -42,9 +42,25 @@ def drive_lorentz(freq, resfreq, amp, guete, untergrund):
     ) + untergrund
 
 
+def resonance_lorentz_vektor(freq, resfreq, amp, guete, untergrund):
+    """
+    :type freq: float
+    :type resfreq: float
+    :type amp: float
+    :type guete: float
+    :type untergrund: float
+    :return: Lorentzverteilung für den Cantilever
+    :rtype: float
+    """
+    return np.sqrt((amp * resfreq**2 / (
+        guete * np.sqrt((freq**2 - resfreq**2)**2 + (freq * resfreq / guete)**2)
+    ))**2 + untergrund**2)
+
+
 fkt_amp = [
     resonance_lorentz,
-    drive_lorentz
+    drive_lorentz,
+    resonance_lorentz_vektor
 ]
 
 

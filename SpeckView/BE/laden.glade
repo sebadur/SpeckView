@@ -163,6 +163,9 @@
       <row>
         <col id="0" translatable="yes">Für antreibendes System</col>
       </row>
+      <row>
+        <col id="0" translatable="yes">Lorentzverteilung für Cantilever (Untergrundrauschen)</col>
+      </row>
     </data>
   </object>
   <object class="GtkListStore" id="liststore2">
@@ -433,7 +436,7 @@
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
                                 <property name="model">liststore1</property>
-                                <property name="active">0</property>
+                                <property name="active">2</property>
                                 <child>
                                   <object class="GtkCellRendererText" id="cellrenderertext2"/>
                                   <attributes>
@@ -710,6 +713,12 @@
                             <child>
                               <placeholder/>
                             </child>
+                            <child>
+                              <placeholder/>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
                           </object>
                           <packing>
                             <property name="expand">True</property>
@@ -917,6 +926,12 @@
                                 <property name="top_attach">1</property>
                                 <property name="bottom_attach">2</property>
                               </packing>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
+                            <child>
+                              <placeholder/>
                             </child>
                             <child>
                               <placeholder/>
