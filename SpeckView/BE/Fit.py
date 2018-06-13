@@ -13,7 +13,7 @@ from multiprocessing import Pool
 from SpeckView.Sonstige import int_max
 
 from Ergebnis import Ergebnis
-from FitFunktion import fkt_amp, fkt_ph, KEIN_FIT, GLAETTEN
+from FitFunktion import fkt_amp, fkt_ph, fkt_filter, KEIN_FIT, GLAETTEN
 from Parameter import index_freq, frequenzen
 
 
@@ -120,6 +120,20 @@ def _bereich(feld):
         return feld[_par.bereich_links:_par.bereich_rechts]
 
 
+def _amp_gefiltert(n):
+    """
+    :type n: int
+    :rtype: numpy.multiarray.ndarray
+    """
+    amplitude = fkt_filter[_par.nr_fkt_filter](_bereich(_amplitude_voll[n]), _par.filter_breite, _par.filter_ordnung)
+    a1 = _par.linkorr_a1
+    a2 = _par.linkorr_a2
+    if a1 != a2:
+        s = (a2 - a1) / float(amplitude.size)
+        amplitude -= numpy.arange(a1, a2, s)
+    return amplitude
+
+
 def _fit_punkt(n):
     """
     :type n: int
@@ -133,7 +147,7 @@ def _fit_punkt(n):
     # ----------- AMPLITUDE fitten -----------
     # ----------------------------------------
 
-    amplitude = savgol_filter(_bereich(_amplitude_voll[n]), _par.filter_breite, _par.filter_ordnung)
+    amplitude = _amp_gefiltert(n)
     index_max = numpy.argmax(amplitude)
     start_freq = _frequenz[index_max]
     start_amp = amplitude[index_max]
@@ -197,7 +211,7 @@ def _fit_punkt(n):
     wahl_phase = _bereich(_phase_voll[n])[index_von:index_bis]
 
     if _mod_ph is GLAETTEN:  # Nur glätten:
-        phase = savgol_filter(wahl_phase, _par.filter_breite, _par.filter_ordnung)
+        phase = savgol_filter(wahl_phase, 15, 3)  # TODO wählbar
         return Ergebnis(
             amp=amp.params['amp'].value,
             amp_fhlr=amp.params['amp'].stderr,

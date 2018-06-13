@@ -3,9 +3,10 @@
   <requires lib="gtk+" version="2.24"/>
   <!-- interface-naming-policy project-wide -->
   <object class="GtkAdjustment" id="adjustment1">
+    <property name="lower">1</property>
     <property name="upper">10000</property>
     <property name="value">15</property>
-    <property name="step_increment">1</property>
+    <property name="step_increment">2</property>
     <property name="page_increment">10</property>
   </object>
   <object class="GtkAdjustment" id="adjustment10">
@@ -67,13 +68,23 @@
     <property name="page_increment">10</property>
   </object>
   <object class="GtkAdjustment" id="adjustment2">
-    <property name="upper">100</property>
+    <property name="upper">1000000</property>
     <property name="value">3</property>
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
   </object>
   <object class="GtkAdjustment" id="adjustment20">
     <property name="upper">100000000</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">10</property>
+  </object>
+  <object class="GtkAdjustment" id="adjustment21">
+    <property name="upper">100</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">10</property>
+  </object>
+  <object class="GtkAdjustment" id="adjustment22">
+    <property name="upper">100</property>
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
   </object>
@@ -191,6 +202,26 @@
       </row>
     </data>
   </object>
+  <object class="GtkListStore" id="liststore3">
+    <columns>
+      <!-- column-name filter_methode -->
+      <column type="gchararray"/>
+    </columns>
+    <data>
+      <row>
+        <col id="0" translatable="yes">Keiner</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">Savitzky-Golay (Fensterbreite, Ordnung des Polynoms)</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">Median (Korngröße)</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">Wiener (Fensterbreite, Rauschen in µV: 0 für automatisch)</col>
+      </row>
+    </data>
+  </object>
   <object class="GtkAdjustment" id="spektren">
     <property name="upper">1</property>
     <property name="step_increment">1</property>
@@ -198,6 +229,7 @@
   </object>
   <object class="GtkWindow" id="fenster_laden">
     <property name="can_focus">False</property>
+    <property name="resizable">False</property>
     <signal name="delete-event" handler="ende" swapped="no"/>
     <child>
       <object class="GtkVBox" id="vbox1">
@@ -543,7 +575,7 @@
                                 <property name="primary_icon_sensitive">True</property>
                                 <property name="secondary_icon_sensitive">True</property>
                                 <property name="adjustment">adjustment8</property>
-                                <property name="digits">5</property>
+                                <property name="digits">6</property>
                                 <property name="numeric">True</property>
                               </object>
                               <packing>
@@ -564,7 +596,7 @@
                                 <property name="primary_icon_sensitive">True</property>
                                 <property name="secondary_icon_sensitive">True</property>
                                 <property name="adjustment">adjustment9</property>
-                                <property name="digits">5</property>
+                                <property name="digits">6</property>
                                 <property name="numeric">True</property>
                               </object>
                               <packing>
@@ -585,7 +617,7 @@
                                 <property name="primary_icon_sensitive">True</property>
                                 <property name="secondary_icon_sensitive">True</property>
                                 <property name="adjustment">adjustment11</property>
-                                <property name="digits">5</property>
+                                <property name="digits">2</property>
                                 <property name="numeric">True</property>
                               </object>
                               <packing>
@@ -606,7 +638,7 @@
                                 <property name="primary_icon_sensitive">True</property>
                                 <property name="secondary_icon_sensitive">True</property>
                                 <property name="adjustment">adjustment12</property>
-                                <property name="digits">3</property>
+                                <property name="digits">2</property>
                                 <property name="numeric">True</property>
                               </object>
                               <packing>
@@ -627,7 +659,7 @@
                                 <property name="primary_icon_sensitive">True</property>
                                 <property name="secondary_icon_sensitive">True</property>
                                 <property name="adjustment">adjustment10</property>
-                                <property name="digits">3</property>
+                                <property name="digits">6</property>
                                 <property name="numeric">True</property>
                               </object>
                               <packing>
@@ -648,7 +680,7 @@
                                 <property name="primary_icon_sensitive">True</property>
                                 <property name="secondary_icon_sensitive">True</property>
                                 <property name="adjustment">adjustment3</property>
-                                <property name="digits">3</property>
+                                <property name="digits">6</property>
                                 <property name="numeric">True</property>
                               </object>
                               <packing>
@@ -719,6 +751,18 @@
                             <child>
                               <placeholder/>
                             </child>
+                            <child>
+                              <placeholder/>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
                           </object>
                           <packing>
                             <property name="expand">True</property>
@@ -761,7 +805,7 @@
                                 <property name="model">liststore2</property>
                                 <property name="active">3</property>
                                 <child>
-                                  <object class="GtkCellRendererCombo" id="cellrenderertext1"/>
+                                  <object class="GtkCellRendererText" id="cellrenderertext1"/>
                                   <attributes>
                                     <attribute name="text">0</attribute>
                                   </attributes>
@@ -939,6 +983,18 @@
                             <child>
                               <placeholder/>
                             </child>
+                            <child>
+                              <placeholder/>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
                           </object>
                           <packing>
                             <property name="expand">True</property>
@@ -1008,14 +1064,21 @@
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <child>
-                      <object class="GtkHBox" id="hbox4">
+                      <object class="GtkVBox" id="vbox5">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <child>
-                          <object class="GtkLabel" id="label18">
+                          <object class="GtkComboBox" id="methode_filter">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="label" translatable="yes">Koeffizientenanzahl</property>
+                            <property name="model">liststore3</property>
+                            <property name="active">1</property>
+                            <child>
+                              <object class="GtkCellRendererText" id="cellrenderertext3"/>
+                              <attributes>
+                                <attribute name="text">0</attribute>
+                              </attributes>
+                            </child>
                           </object>
                           <packing>
                             <property name="expand">True</property>
@@ -1024,16 +1087,69 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkSpinButton" id="savgol_koeff">
+                          <object class="GtkHBox" id="hbox4">
                             <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="invisible_char">•</property>
-                            <property name="primary_icon_activatable">False</property>
-                            <property name="secondary_icon_activatable">False</property>
-                            <property name="primary_icon_sensitive">True</property>
-                            <property name="secondary_icon_sensitive">True</property>
-                            <property name="adjustment">adjustment1</property>
-                            <property name="numeric">True</property>
+                            <property name="can_focus">False</property>
+                            <child>
+                              <object class="GtkLabel" id="label18">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="label" translatable="yes">Parameter 1</property>
+                              </object>
+                              <packing>
+                                <property name="expand">True</property>
+                                <property name="fill">True</property>
+                                <property name="position">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkSpinButton" id="savgol_koeff">
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="invisible_char">•</property>
+                                <property name="primary_icon_activatable">False</property>
+                                <property name="secondary_icon_activatable">False</property>
+                                <property name="primary_icon_sensitive">True</property>
+                                <property name="secondary_icon_sensitive">True</property>
+                                <property name="adjustment">adjustment1</property>
+                                <property name="numeric">True</property>
+                              </object>
+                              <packing>
+                                <property name="expand">True</property>
+                                <property name="fill">True</property>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkLabel" id="label19">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="label" translatable="yes">Parameter 2</property>
+                              </object>
+                              <packing>
+                                <property name="expand">True</property>
+                                <property name="fill">True</property>
+                                <property name="position">2</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkSpinButton" id="savgol_ordnung">
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="invisible_char">•</property>
+                                <property name="primary_icon_activatable">False</property>
+                                <property name="secondary_icon_activatable">False</property>
+                                <property name="primary_icon_sensitive">True</property>
+                                <property name="secondary_icon_sensitive">True</property>
+                                <property name="adjustment">adjustment2</property>
+                                <property name="numeric">True</property>
+                              </object>
+                              <packing>
+                                <property name="expand">True</property>
+                                <property name="fill">True</property>
+                                <property name="position">3</property>
+                              </packing>
+                            </child>
                           </object>
                           <packing>
                             <property name="expand">True</property>
@@ -1042,33 +1158,74 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkLabel" id="label19">
+                          <object class="GtkHBox" id="hbox5">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="label" translatable="yes">Ordnung des Polynoms</property>
+                            <child>
+                              <object class="GtkLabel" id="label23">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="label" translatable="yes">Lin. Korrektur: A1 (mV)</property>
+                              </object>
+                              <packing>
+                                <property name="expand">True</property>
+                                <property name="fill">True</property>
+                                <property name="position">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkSpinButton" id="linkorr_a1">
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="invisible_char">●</property>
+                                <property name="primary_icon_activatable">False</property>
+                                <property name="secondary_icon_activatable">False</property>
+                                <property name="primary_icon_sensitive">True</property>
+                                <property name="secondary_icon_sensitive">True</property>
+                                <property name="adjustment">adjustment21</property>
+                                <property name="digits">6</property>
+                              </object>
+                              <packing>
+                                <property name="expand">True</property>
+                                <property name="fill">True</property>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkLabel" id="label24">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="label" translatable="yes">A2 (mV)</property>
+                              </object>
+                              <packing>
+                                <property name="expand">True</property>
+                                <property name="fill">True</property>
+                                <property name="position">2</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkSpinButton" id="linkorr_a2">
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="invisible_char">●</property>
+                                <property name="primary_icon_activatable">False</property>
+                                <property name="secondary_icon_activatable">False</property>
+                                <property name="primary_icon_sensitive">True</property>
+                                <property name="secondary_icon_sensitive">True</property>
+                                <property name="adjustment">adjustment22</property>
+                                <property name="digits">6</property>
+                              </object>
+                              <packing>
+                                <property name="expand">True</property>
+                                <property name="fill">True</property>
+                                <property name="position">3</property>
+                              </packing>
+                            </child>
                           </object>
                           <packing>
                             <property name="expand">True</property>
                             <property name="fill">True</property>
                             <property name="position">2</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkSpinButton" id="savgol_ordnung">
-                            <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="invisible_char">•</property>
-                            <property name="primary_icon_activatable">False</property>
-                            <property name="secondary_icon_activatable">False</property>
-                            <property name="primary_icon_sensitive">True</property>
-                            <property name="secondary_icon_sensitive">True</property>
-                            <property name="adjustment">adjustment2</property>
-                            <property name="numeric">True</property>
-                          </object>
-                          <packing>
-                            <property name="expand">True</property>
-                            <property name="fill">True</property>
-                            <property name="position">3</property>
                           </packing>
                         </child>
                       </object>
@@ -1077,7 +1234,7 @@
                       <object class="GtkLabel" id="label17">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">Savitzky-Golay-Filter</property>
+                        <property name="label" translatable="yes">Signalfilter</property>
                       </object>
                     </child>
                   </object>
@@ -1093,9 +1250,6 @@
                 <property name="fill">True</property>
                 <property name="position">0</property>
               </packing>
-            </child>
-            <child>
-              <placeholder/>
             </child>
           </object>
           <packing>

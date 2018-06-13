@@ -11,8 +11,8 @@ from SpeckView.Sonstige import Fehler
 class Parameter:
     """ Alle für den Fit nötigen Messparameter """
     def __init__(self, fmin, fmax, df, raster, pixel, dim, spektroskopie, hysterese, dcmin, dcmax, ddc, mittelungen,
-                 amp_fitfkt, ph_fitfkt, filter_breite, filter_ordnung, phase_versatz, bereich_min, bereich_max, amp,
-                 amp_min, amp_max, phase, konf, kanal, version):
+                 amp_fitfkt, ph_fitfkt, filterfkt, filter_breite, filter_ordnung, linkorr_a1, linkorr_a2, phase_versatz,
+                 bereich_min, bereich_max, amp, amp_min, amp_max, phase, konf, kanal, version):
         """
         :type fmin: int
         :type fmax: int
@@ -30,8 +30,12 @@ class Parameter:
         :type amp_fitfkt: int
         :param ph_fitfkt: Nummer der Fitfunktion für die Phase
         :type ph_fitfkt: int
+        :param amp_fitfkt: Nummer der Filterfunktion für die Amplitude
+        :type amp_fitfkt: int
         :type filter_breite: int
         :type filter_ordnung: int
+        :type linkorr_a1: float
+        :type linkorr_a2: float
         :param phase_versatz: Die zur Resonanz gehörige Phase wird diesen Frequenzversatz neben der Resonanzfrequenz aus
         der geglätteten Phasenmessung entnommen.
         :type phase_versatz: int
@@ -73,12 +77,18 @@ class Parameter:
         """ Anzahl der nachträglichen Mittelungen pro Rasterpunkt """
         self.nr_fkt_amp = amp_fitfkt
         """ Zum Fitten der Amplitude in Abhängigkeit zur Phase für jede einzelne Messung verwendete Funktion """
+        self.nr_fkt_filter = filterfkt
+        """ Die zu verwendende Filterfunktion für die Amplitude """
         self.nr_fkt_ph = ph_fitfkt
         """ Fitfunktion für die Phase """
         self.filter_breite = filter_breite
         """ Breite des Filterfensters """
         self.filter_ordnung = filter_ordnung
         """ Ordnung des Filterpolynoms """
+        self.linkorr_a1 = linkorr_a1
+        """ Anfangsamplitude der Linearkorrektur """
+        self.linkorr_a2 = linkorr_a2
+        """ Endamplitude der Linearkorrektur """
         self.phase_versatz = phase_versatz
         """ Die Phase wird diesen Versatz in Hz neben der Resonanzfrequenz der Phasenauswertung entnommen """
 

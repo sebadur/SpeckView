@@ -16,7 +16,7 @@ from SpeckView.Plotter import Plotter
 from SpeckView.Parser import DefaultParser
 
 from Ergebnis import amp_verlauf, phase_verlauf
-from Fit import Fit
+from Fit import Fit, _amp_gefiltert, _bereich  # TODO gefährlich
 from Konstant import *
 from Parameter import *
 from TDMS import TDMS
@@ -129,13 +129,14 @@ class Laden(gtk.Builder):
             :param fit: list
             """
             self.plotter.leeren()
-            self.plotter.plot(frequenzen_voll(par), messung)
+            self.plotter.plot(_bereich(frequenzen_voll(par)), messung)
             if fit is not None:
                 self.plotter.plot(frequenz, fit, linewidth=2)
             self.plotter.draw()
 
         if self.radiobutton('vorschau_amp').get_active():
-            plot(self.amplitude[n], amp_verlauf(par, erg))
+            plot(_amp_gefiltert(n), amp_verlauf(par, erg))
+            #plot(self.amplitude[n], amp_verlauf(par, erg))
         else:  # if self.radiobutton('vorschau_phase').get_active():
             plot(self.phase[n], phase_verlauf(par, erg))
 
@@ -158,8 +159,11 @@ class Laden(gtk.Builder):
             mittelungen=self.mittelungen.get_value_as_int(),
             amp_fitfkt=self.combobox('methode_amp').get_active(),
             ph_fitfkt=self.combobox('methode_phase').get_active(),
+            filterfkt=self.combobox('methode_filter').get_active(),
             filter_breite=self.spinbutton('savgol_koeff').get_value_as_int(),
             filter_ordnung=self.spinbutton('savgol_ordnung').get_value_as_int(),
+            linkorr_a1=self.spinbutton('linkorr_a1').get_value(),
+            linkorr_a2=self.spinbutton('linkorr_a2').get_value(),
             phase_versatz=self.spinbutton('phase_versatz').get_value(),
             bereich_min=self.bereich_min.get_value(),
             bereich_max=self.bereich_max.get_value(),
@@ -195,6 +199,9 @@ class Laden(gtk.Builder):
 
     def fit_starten(self, _):
         par = self.fitparameter()
+        marburg = self.parser.getint(opt, 'Modus') == 5
+        if marburg:
+            par.spektren = self.parser.getint('Sonst', 'NSp')
 
         # Messwerte einlesen:
         self.messwerte_lesen(par)
@@ -220,7 +227,7 @@ class Laden(gtk.Builder):
         erg = erg.get()
         """ :type: list[Ergebnis] """
 
-        if not par.raster and not par.spektroskopie:
+        if not par.raster and not par.spektroskopie and not marburg:
             datei = open(par.konf.rsplit('.be', 1)[0] + ".amp", 'w')
             datei.write('f/Hz,A/V\n')
             for n in range(self.amplitude.size):
@@ -254,7 +261,7 @@ class Laden(gtk.Builder):
                     label_x='', label_y=''
                 )
 
-        if par.raster and not par.spektroskopie:
+        if par.raster and not par.spektroskopie and not marburg:
             anlegen([n.amp / n.guete_amp for n in erg], "A0 " + self.kanal, 'V')
             anlegen([n.amp for n in erg], "Amplitude", 'V')
             anlegen([n.phase for n in erg], "Phase", '°')
