@@ -11,7 +11,7 @@
   </object>
   <object class="GtkAdjustment" id="adjustment10">
     <property name="upper">10000000</property>
-    <property name="value">1000</property>
+    <property name="value">1</property>
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
   </object>
@@ -22,7 +22,7 @@
   </object>
   <object class="GtkAdjustment" id="adjustment12">
     <property name="upper">10000000</property>
-    <property name="value">1000</property>
+    <property name="value">200</property>
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
   </object>
@@ -80,17 +80,25 @@
   </object>
   <object class="GtkAdjustment" id="adjustment21">
     <property name="upper">100</property>
+    <property name="value">0.00069999999999999999</property>
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
   </object>
   <object class="GtkAdjustment" id="adjustment22">
     <property name="upper">100</property>
+    <property name="value">0.00048000000000000001</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">10</property>
+  </object>
+  <object class="GtkAdjustment" id="adjustment23">
+    <property name="lower">-360</property>
+    <property name="upper">360</property>
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
   </object>
   <object class="GtkAdjustment" id="adjustment3">
     <property name="upper">10000000</property>
-    <property name="value">1000</property>
+    <property name="value">1</property>
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
   </object>
@@ -135,7 +143,7 @@
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <child>
-          <object class="GtkSpinner" id="spinner1">
+          <object class="GtkSpinner" id="spinner">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="active">True</property>
@@ -219,6 +227,9 @@
       </row>
       <row>
         <col id="0" translatable="yes">Wiener (Fensterbreite, Rauschen in µV: 0 für automatisch)</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">Anti-Peak (Peakposition, Ersetzposition)</col>
       </row>
     </data>
   </object>
@@ -507,8 +518,11 @@
                           <object class="GtkTable" id="table1">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="n_rows">5</property>
+                            <property name="n_rows">6</property>
                             <property name="n_columns">3</property>
+                            <child>
+                              <placeholder/>
+                            </child>
                             <child>
                               <object class="GtkLabel" id="label4">
                                 <property name="visible">True</property>
@@ -763,6 +777,46 @@
                             <child>
                               <placeholder/>
                             </child>
+                            <child>
+                              <placeholder/>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
+                            <child>
+                              <object class="GtkCheckButton" id="f0_phase">
+                                <property name="label" translatable="yes">Frequenz durch Phase</property>
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">False</property>
+                                <property name="active">True</property>
+                                <property name="draw_indicator">True</property>
+                              </object>
+                              <packing>
+                                <property name="left_attach">1</property>
+                                <property name="right_attach">3</property>
+                                <property name="top_attach">5</property>
+                                <property name="bottom_attach">6</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
                           </object>
                           <packing>
                             <property name="expand">True</property>
@@ -995,6 +1049,36 @@
                             <child>
                               <placeholder/>
                             </child>
+                            <child>
+                              <placeholder/>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
                           </object>
                           <packing>
                             <property name="expand">True</property>
@@ -1036,6 +1120,36 @@
                                 <property name="position">1</property>
                               </packing>
                             </child>
+                            <child>
+                              <object class="GtkLabel" id="label26">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="label" translatable="yes">Referenz (°)</property>
+                              </object>
+                              <packing>
+                                <property name="expand">True</property>
+                                <property name="fill">True</property>
+                                <property name="position">2</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkSpinButton" id="phase_referenz">
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="invisible_char">•</property>
+                                <property name="primary_icon_activatable">False</property>
+                                <property name="secondary_icon_activatable">False</property>
+                                <property name="primary_icon_sensitive">True</property>
+                                <property name="secondary_icon_sensitive">True</property>
+                                <property name="adjustment">adjustment23</property>
+                                <property name="numeric">True</property>
+                              </object>
+                              <packing>
+                                <property name="expand">True</property>
+                                <property name="fill">True</property>
+                                <property name="position">3</property>
+                              </packing>
+                            </child>
                           </object>
                           <packing>
                             <property name="expand">True</property>
@@ -1072,7 +1186,8 @@
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="model">liststore3</property>
-                            <property name="active">1</property>
+                            <property name="active">0</property>
+                            <signal name="changed" handler="vorschau" swapped="no"/>
                             <child>
                               <object class="GtkCellRendererText" id="cellrenderertext3"/>
                               <attributes>
@@ -1113,6 +1228,7 @@
                                 <property name="secondary_icon_sensitive">True</property>
                                 <property name="adjustment">adjustment1</property>
                                 <property name="numeric">True</property>
+                                <signal name="value-changed" handler="vorschau" swapped="no"/>
                               </object>
                               <packing>
                                 <property name="expand">True</property>
@@ -1143,6 +1259,7 @@
                                 <property name="secondary_icon_sensitive">True</property>
                                 <property name="adjustment">adjustment2</property>
                                 <property name="numeric">True</property>
+                                <signal name="value-changed" handler="vorschau" swapped="no"/>
                               </object>
                               <packing>
                                 <property name="expand">True</property>
@@ -1184,6 +1301,7 @@
                                 <property name="secondary_icon_sensitive">True</property>
                                 <property name="adjustment">adjustment21</property>
                                 <property name="digits">6</property>
+                                <signal name="value-changed" handler="vorschau" swapped="no"/>
                               </object>
                               <packing>
                                 <property name="expand">True</property>
@@ -1214,6 +1332,7 @@
                                 <property name="secondary_icon_sensitive">True</property>
                                 <property name="adjustment">adjustment22</property>
                                 <property name="digits">6</property>
+                                <signal name="value-changed" handler="vorschau" swapped="no"/>
                               </object>
                               <packing>
                                 <property name="expand">True</property>
@@ -1226,6 +1345,45 @@
                             <property name="expand">True</property>
                             <property name="fill">True</property>
                             <property name="position">2</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkHBox" id="hbox10">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <child>
+                              <object class="GtkLabel" id="label25">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="label" translatable="yes">Störpeaks:</property>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="position">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkEntry" id="antipeaks">
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="invisible_char">●</property>
+                                <property name="primary_icon_activatable">False</property>
+                                <property name="secondary_icon_activatable">False</property>
+                                <property name="primary_icon_sensitive">True</property>
+                                <property name="secondary_icon_sensitive">True</property>
+                              </object>
+                              <packing>
+                                <property name="expand">True</property>
+                                <property name="fill">True</property>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">True</property>
+                            <property name="fill">True</property>
+                            <property name="position">3</property>
                           </packing>
                         </child>
                       </object>

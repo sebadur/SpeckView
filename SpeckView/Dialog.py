@@ -20,9 +20,10 @@ class Dialog(gtk.Builder):
         })
 
     def info(self, titel, info):
+        self.get_object('ja').set_visible(False)
         self.dialog.set_title(titel)
         self.get_object('frage').set_text(info)
-        self.get_object('ja').set_label("OK")
+        self.get_object('ja').set_label("")
         self.get_object('nein').set_label("OK")
         self.dialog.show_all()
         gtk.main()
@@ -35,6 +36,7 @@ class Dialog(gtk.Builder):
         :type nein: str
         :rtype: bool
         """
+        self.get_object('ja').set_visible(True)
         self.dialog.set_title(titel)
         self.get_object('frage').set_text(frage)
         self.get_object('ja').set_label(ja)

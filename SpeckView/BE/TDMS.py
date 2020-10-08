@@ -28,7 +28,7 @@ class TDMS:
         _typ = typ
 
         if _par.version >= 3:
-            tdms = TdmsFile(_par.konf.rsplit('.be', 1)[0] + '.tdms')
+            tdms = TdmsFile(os.path.expanduser('~') + os.sep + _par.konf.rsplit('.be', 1)[0] + '.tdms')
             return _lade_tdms(kanal=tdms.object(kanal, typ))
         else:
             pfad = _par.konf.rsplit(os.sep, 1)[0] + os.sep + typ

@@ -16,7 +16,7 @@ from SpeckView.Plotter import Plotter
 from SpeckView.Parser import DefaultParser
 
 from Ergebnis import amp_verlauf, phase_verlauf
-from Fit import Fit, _amp_gefiltert, _bereich  # TODO gefährlich
+from Fit import Fit
 from Konstant import *
 from Parameter import *
 from TDMS import TDMS
@@ -29,6 +29,13 @@ sgn = 'Signalgenerator'
 man = 'Manipulation'
 rst = 'Raster'
 usb = 'USB'
+qnt = 'Quantisierung'
+
+
+def SIUnit0(txt):
+    si = SIUnit()
+    si.set_from_string(txt)
+    return si
 
 
 class Laden(gtk.Builder):
@@ -62,13 +69,15 @@ class Laden(gtk.Builder):
 
         self.fortschritt = self.get_object('fortschritt')
         """ :type: gtk.ProgressBar """
+        self.spinner = self.get_object('spinner')
+        """ :type: gtk.Spinner """
 
         self.parser = DefaultParser()
         self.parser.read(konf)
 
         self.version = self.parser.getint(opt, 'Version')
         self.sv = os.path.dirname(svbe)
-        if self.version == 4:
+        if self.version >= 4:
             if Dialog(self.sv).frage("Kanal", "Den gewünschten Kanal wählen:", "NF", "HF"):
                 if Dialog(self.sv).frage("Kanal", "Bias-Spannung positiv oder negativ?", "positiv", "negativ"):
                     self.kanal = 'nfp'
@@ -121,24 +130,24 @@ class Laden(gtk.Builder):
         frequenz = frequenzen(par)
         if self.amplitude is None:
             self.messwerte_lesen(par)
-        erg = Fit(par, self.amplitude, self.phase, lambda(i): None).vorschau(n)
+        fit = Fit(par, self.amplitude, self.phase, lambda(i): None)
+        erg = fit.vorschau(n)
 
-        def plot(messung, fit):
+        def plot(messung, kurve):
             """
             :param messung: list
-            :param fit: list
+            :param kurve: list
             """
             self.plotter.leeren()
-            self.plotter.plot(_bereich(frequenzen_voll(par)), messung)
-            if fit is not None:
-                self.plotter.plot(frequenz, fit, linewidth=2)
+            self.plotter.plot(frequenz, messung)
+            if kurve is not None:
+                self.plotter.plot(frequenz, kurve, linewidth=2)
             self.plotter.draw()
 
         if self.radiobutton('vorschau_amp').get_active():
-            plot(_amp_gefiltert(n), amp_verlauf(par, erg))
-            #plot(self.amplitude[n], amp_verlauf(par, erg))
+            plot(fit.amplitude(n), amp_verlauf(par, erg))
         else:  # if self.radiobutton('vorschau_phase').get_active():
-            plot(self.phase[n], phase_verlauf(par, erg))
+            plot(fit.phase(n), phase_verlauf(par, erg))
 
     def fitparameter(self):
         """
@@ -152,7 +161,8 @@ class Laden(gtk.Builder):
             pixel=self.pixel.get_value_as_int(),
             dim=self.dim.get_value(),
             spektroskopie=self.parser.getboolean(man, 'Spektroskopie'),
-            hysterese=self.parser.getboolean(man, 'Hysterese'),
+            hysterese=self.parser.getboolint(man, 'Hysterese'),
+            punkte=self.parser.getint(man, 'HPunkte'),
             dcmin=self.parser.getfloat(man, 'Umin'),
             dcmax=self.parser.getfloat(man, 'Umax'),
             ddc=self.parser.getfloat(man, 'dU'),
@@ -164,7 +174,9 @@ class Laden(gtk.Builder):
             filter_ordnung=self.spinbutton('savgol_ordnung').get_value_as_int(),
             linkorr_a1=self.spinbutton('linkorr_a1').get_value(),
             linkorr_a2=self.spinbutton('linkorr_a2').get_value(),
+            antipeaks=self.entry('antipeaks').get_text(),
             phase_versatz=self.spinbutton('phase_versatz').get_value(),
+            phase_referenz=self.spinbutton('phase_referenz').get_value(),
             bereich_min=self.bereich_min.get_value(),
             bereich_max=self.bereich_max.get_value(),
             amp=Fitparameter(
@@ -175,6 +187,7 @@ class Laden(gtk.Builder):
             ),
             amp_min=self.spinbutton('amp_min').get_value(),
             amp_max=self.spinbutton('amp_max').get_value(),
+            f0_phase=self.get_object('f0_phase').get_active(),
             phase=Fitparameter(
                 guete_min=self.spinbutton('phase_q_min').get_value(),
                 guete_max=self.spinbutton('phase_q_max').get_value(),
@@ -218,14 +231,18 @@ class Laden(gtk.Builder):
             gtk.main_iteration_do(False)
             try:
                 q.get_nowait()
-                x += 1.0 / par.spektren
+                x = min(max(x + 1.0 / par.spektren, 0.0), 1.0)
                 self.fortschritt.set_fraction(x)
             except Empty:
                 pass
         if hasattr(os, 'fork'):
             q.close()
-        erg = erg.get()
-        """ :type: list[Ergebnis] """
+        try:
+            erg = erg.get()
+            """ :type: list[Ergebnis] """
+        except Exception as f:
+            self.spinner.stop()
+            raise f
 
         if not par.raster and not par.spektroskopie and not marburg:
             datei = open(par.konf.rsplit('.be', 1)[0] + ".amp", 'w')
@@ -247,8 +264,8 @@ class Laden(gtk.Builder):
                 Format.channel_data(
                     c=self.container,
                     inhalt=inhalt,
-                    einheit_xy=SIUnit('m'),
-                    einheit_z=SIUnit(einheit),
+                    einheit_xy=SIUnit0('m'),
+                    einheit_z=SIUnit0(einheit),
                     titel=titel,
                     dim=par.dim,
                     pixel=par.pixel  # TODO geht nur, wenn kein Spektrum
@@ -261,18 +278,31 @@ class Laden(gtk.Builder):
                     label_x='', label_y=''
                 )
 
+        if self.parser.getboolean(qnt, 'AmplitudeMeter'):
+            si_a = 'm'
+            sq = 1.0
+        else:
+            si_a = 'V'
+            sq = self.parser.getfloat(qnt, 'Laser') / (2.0 * numpy.pi * self.parser.getfloat(qnt, 'DeltaU'))
+        if self.version >= 5:
+            si_a0 = 'm'
+        else:
+            si_a0 = si_a
+            sq = 1.0
+
         if par.raster and not par.spektroskopie and not marburg:
-            anlegen([n.amp / n.guete_amp for n in erg], "A0 " + self.kanal, 'V')
-            anlegen([n.amp for n in erg], "Amplitude", 'V')
+            anlegen([sq * n.amp / n.guete_amp for n in erg], "A0 " + self.kanal, si_a0)
+            self.container.set_double_by_name('/0/sq', sq)
+            anlegen([n.amp for n in erg], "Amplitude", si_a)
             anlegen([n.phase for n in erg], "Phase", '°')
             anlegen([n.resfreq for n in erg], "Resonanzfrequenz", 'Hz')
             anlegen([n.guete_amp for n in erg], u"Güte (Amplitudenfit)", '')
-            anlegen([n.amp_fhlr for n in erg], "Fehler Amp.", 'V')
+            anlegen([n.amp_fhlr for n in erg], "Fehler Amp.", si_a)
             anlegen([n.phase_fhlr for n in erg], "Fehler Phase", '°')
             anlegen([n.resfreq_fhlr for n in erg], "Fehler Resfreq.", 'Hz')
             anlegen([n.guete_amp_fhlr for n in erg], u"Fehler Güte (Ampfit.)", '')
             anlegen([n.guete_ph for n in erg], u"Güte (Phasenfit)", '')
-            anlegen([n.untergrund for n in erg], "Untergrund", 'V')
+            anlegen([n.untergrund for n in erg], "Untergrund", si_a)
             anlegen([n.phase_rel for n in erg], "Phasenversatz", '°')
 
             Format.set_custom(self.container, ERGEBNIS, erg)
@@ -286,13 +316,13 @@ class Laden(gtk.Builder):
                 dc = numpy.arange(par.dcmin, par.dcmax + par.ddc, par.ddc)
             else:
                 dc = [self.parser.getfloat(usb, 'Cantilever')]
-            datei.write('DC/V,A0/V,dA0/V,A/V,dA/V,f0/Hz,df0/Hz,Q,dQ,Phase\n')
+            datei.write('DC/V,A0/'+si_a0+',dA0/'+si_a0+',A/'+si_a+',dA/'+si_a+',f0/Hz,df0/Hz,Q,dQ,Phase\n')
             for n in range(par.spektren):
                 amp = erg[n].amp
                 guete = erg[n].guete_amp
                 datei.write(
-                    str(dc[n % len(dc)]) + ',' + str(amp / guete) + ',' +
-                    str(1 / guete * erg[n].amp_fhlr + amp / guete / guete * erg[n].guete_amp_fhlr) + ',' +
+                    str(dc[n % len(dc)]) + ',' + str(sq * amp / guete) + ',' +
+                    str(1 / guete * sq * erg[n].amp_fhlr + sq * amp / guete / guete * erg[n].guete_amp_fhlr) + ',' +
                     str(erg[n].amp) + ',' + str(erg[n].amp_fhlr) + ',' +
                     str(erg[n].resfreq) + ',' + str(erg[n].resfreq_fhlr) + ',' + str(erg[n].guete_amp) + ',' +
                     str(erg[n].guete_amp_fhlr) + ',' + str(erg[n].phase) + '\n'

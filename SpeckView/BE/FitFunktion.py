@@ -122,7 +122,7 @@ fkt_ph = [
 
 
 fkt_filter = [
-    lambda amp, p1, p2: amp,
+    lambda amp, p1, p2: np.copy(amp),
     lambda amp, p1, p2: savgol_filter(amp, p1, p2),
     lambda amp, p1, p2: medfilt(amp, p1),
     lambda amp, p1, p2: wiener(amp, p1, p2 if p2 != 0 else None)

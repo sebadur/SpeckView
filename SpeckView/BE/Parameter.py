@@ -10,9 +10,9 @@ from SpeckView.Sonstige import Fehler
 
 class Parameter:
     """ Alle für den Fit nötigen Messparameter """
-    def __init__(self, fmin, fmax, df, raster, pixel, dim, spektroskopie, hysterese, dcmin, dcmax, ddc, mittelungen,
-                 amp_fitfkt, ph_fitfkt, filterfkt, filter_breite, filter_ordnung, linkorr_a1, linkorr_a2, phase_versatz,
-                 bereich_min, bereich_max, amp, amp_min, amp_max, phase, konf, kanal, version):
+    def __init__(self, fmin, fmax, df, raster, pixel, dim, spektroskopie, hysterese, punkte, dcmin, dcmax, ddc, mittelungen,
+                 amp_fitfkt, ph_fitfkt, filterfkt, filter_breite, filter_ordnung, linkorr_a1, linkorr_a2, antipeaks,
+                 phase_versatz, phase_referenz, bereich_min, bereich_max, amp, amp_min, amp_max, f0_phase, phase, konf, kanal, version):
         """
         :type fmin: int
         :type fmax: int
@@ -22,6 +22,7 @@ class Parameter:
         :type dim: float
         :type spektroskopie: bool
         :type hysterese: bool
+        :type punkte: int
         :type dcmin: float
         :type dcmax: float
         :type ddc: float
@@ -36,14 +37,17 @@ class Parameter:
         :type filter_ordnung: int
         :type linkorr_a1: float
         :type linkorr_a2: float
+        :type antipeaks: str
         :param phase_versatz: Die zur Resonanz gehörige Phase wird diesen Frequenzversatz neben der Resonanzfrequenz aus
         der geglätteten Phasenmessung entnommen.
         :type phase_versatz: int
+        :type phase_referenz: float
         :type bereich_min: float
         :type bereich_max: float
         :type amp: Fitparameter
         :type amp_min: float
         :type amp_max: float
+        :type f0_phase: bool
         :type phase: Fitparameter
         :type konf: str
         :type kanal: str
@@ -60,6 +64,8 @@ class Parameter:
         """ Beschränkungen der Fitparameter für die Amplitude """
         self.phase = phase
         """ Beschränkungen der Fitparameter für die Phase """
+        self.f0_phase = f0_phase
+        """ Resonanzfrequenz anhand der Phase suchen """
 
         self.fmin_voll = fmin
         """ Anfangsfrequenz des vollen Bereichs der aufgenommenen Bandanregung """
@@ -89,8 +95,12 @@ class Parameter:
         """ Anfangsamplitude der Linearkorrektur """
         self.linkorr_a2 = linkorr_a2
         """ Endamplitude der Linearkorrektur """
+        self.antipeaks = antipeaks
+        """ Frequenzen mit Störpeaks, durch Komma getrennt """
         self.phase_versatz = phase_versatz
         """ Die Phase wird diesen Versatz in Hz neben der Resonanzfrequenz der Phasenauswertung entnommen """
+        self.phase_referenz = phase_referenz
+        """ Rereferenzphase """
 
         self.konf = konf
         """ Konfigurationseinstellungen """
@@ -127,10 +137,12 @@ class Parameter:
         else:
             self.spektren = 1
         if spektroskopie:
-            if hysterese:
+            if hysterese == 1:
                 self.spektren *= int(2 * (dcmax - dcmin) / ddc + 1)
-            else:
+            elif hysterese == 0:
                 self.spektren *= int((dcmax - dcmin) / ddc + 1)
+            else:
+                self.spektren *= punkte
 
         self.kanal = kanal
         """ Kanal der Tdms-Datei (elstat/elmech) """

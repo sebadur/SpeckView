@@ -10,6 +10,14 @@ class DefaultParser(ConfigParser):
     def __init__(self):
         ConfigParser.__init__(self)
 
+    def getboolint(self, section, option):
+        try:
+            return ConfigParser.getboolean(self, section, option)
+        except (NoSectionError, NoOptionError):
+            return False
+        except ValueError:
+            return self.getint(section, option)
+
     def getboolean(self, section, option):
         try:
             return ConfigParser.getboolean(self, section, option)

@@ -27,17 +27,17 @@ class Ergebnis:
         :type guete_amp_fhlr: float
         :type phase_fhlr: float
         """
-        self.amp = amp
-        self.phase = phase
-        self.resfreq = resfreq
-        self.guete_amp = guete_amp
-        self.guete_ph = guete_ph
-        self.untergrund = untergrund
-        self.phase_rel = phase_rel
-        self.amp_fhlr = amp_fhlr
-        self.resfreq_fhlr = resfreq_fhlr
-        self.guete_amp_fhlr = guete_amp_fhlr
-        self.phase_fhlr = phase_fhlr
+        self.amp = _num(amp)
+        self.phase = _num(phase)
+        self.resfreq = _num(resfreq)
+        self.guete_amp = _num(guete_amp)
+        self.guete_ph = _num(guete_ph)
+        self.untergrund = _num(untergrund)
+        self.phase_rel = _num(phase_rel)
+        self.amp_fhlr = _num(amp_fhlr)
+        self.resfreq_fhlr = _num(resfreq_fhlr)
+        self.guete_amp_fhlr = _num(guete_amp_fhlr)
+        self.phase_fhlr = _num(phase_fhlr)
 
 
 def amp_verlauf(par, erg):
@@ -66,3 +66,15 @@ def phase_verlauf(par, erg):
             fkt(freq, erg.resfreq, erg.guete_amp, erg.phase_rel)
             for freq in frequenzen(par)
         ]
+
+
+def _num(wert):
+    """
+    Wandelt alle None zu nan um.
+    :type wert: float
+    :rtype: float
+    """
+    if wert is None:
+        return NaN
+    else:
+        return wert

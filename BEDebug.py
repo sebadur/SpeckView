@@ -63,27 +63,28 @@ class DebugTest(unittest.TestCase):
         import numpy
         fit = Fit(
             Parameter(
-                fmin=50000, fmax=61000, df=1000,
+                fmin=47000, fmax=64000, df=1000,
                 raster=True, pixel=1, dim=0.000001,
                 mittelungen=100,
                 amp_fitfkt=0, ph_fitfkt=3, filterfkt=0,
                 filter_breite=5, filter_ordnung=2,
-                linkorr_a1=0.0, linkorr_a2=0.0,
-                phase_versatz=1000,
-                bereich_min=50000, bereich_max=61000,
+                linkorr_a1=0.0, linkorr_a2=0.0, antipeaks="",
+                phase_versatz=1000, phase_referenz=0,
+                bereich_min=47000, bereich_max=64000,
                 amp=Fitparameter(0.001, 1000, 0, 10),
                 amp_min=0.001, amp_max=1000,
+                f0_phase=True,
                 phase=Fitparameter(0.00, 1000, 0, 1000),
-                spektroskopie=False, hysterese=False, dcmax=0, dcmin=0, ddc=0,
+                spektroskopie=False, hysterese=False, punkte=0, dcmax=0, dcmin=0, ddc=0,
                 konf='', kanal='elstat', version=3
             ),
-            numpy.array([[0, 0, 1, 1, 5, 10, 5, 1, 1, 0, 0]]),
-            numpy.array([[180, 179, 175, 174, 90, 0, -90, -174, -175, -179, -180]]),
+            numpy.array([[0, 0, 0, 0, 0, 1, 1, 5, 10, 5, 1, 1, 0, 0, 0, 0, 0]]),
+            numpy.array([[180, 180, 180, 180, 179, 175, 174, 90, 0, -90, -174, -175, -179, -180, -180, -180, -180]]),
             lambda (n): None
         ).vorschau(0)
-        self.assertAlmostEqual(fit.amp, 9, delta=1)
-        self.assertAlmostEqual(fit.guete_amp, 52, delta=2)
-        self.assertAlmostEqual(fit.phase, -180, delta=10)
+        self.assertAlmostEqual(fit.amp, 10, delta=1)
+        self.assertAlmostEqual(fit.guete_amp, 78, delta=2)
+        self.assertAlmostEqual(fit.phase, -180, delta=45)
         self.assertAlmostEqual(fit.resfreq, 55000, delta=500)
         self.assertAlmostEqual(fit.untergrund, 0)
 

@@ -72,7 +72,7 @@ def spectra_data(c, x, y, label_x, label_y):
 
     if not hasattr(c, 'n_sd'):
         c.n_sd = 1
-    name = '0/graph/graph/' + str(c.n_sd)
+    name = '/0/graph/graph/' + str(c.n_sd)
     c.set_object_by_name(name, sd)
     c.set_boolean_by_name(name + '/visible', True)
     c.n_sd += 1

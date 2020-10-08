@@ -74,6 +74,22 @@ class Fit:
         self._belegen()
         return _fit_punkt(n)
 
+    def amplitude(self, n):
+        """
+        :type n: int
+        :rtype: list
+        """
+        self._belegen()
+        return _amp_gefiltert(n)
+
+    def phase(self, n):
+        """
+        :type n: int
+        :rtype: list
+        """
+        self._belegen()
+        return _umbrechen(_bereich(_phase_voll[n]))
+
     @staticmethod
     def stopp():
         """
@@ -131,6 +147,14 @@ def _amp_gefiltert(n):
     if a1 != a2:
         s = (a2 - a1) / float(amplitude.size)
         amplitude -= numpy.arange(a1, a2, s)
+    for peak in _par.antipeaks.split(','):
+        try:
+            fs = index_freq(_par, float(peak))
+            amplitude[fs-1] = amplitude[fs-2]
+            amplitude[fs] = amplitude[fs-2]
+            amplitude[fs+1] = amplitude[fs+2]
+        except Exception:
+            pass
     return amplitude
 
 
@@ -152,10 +176,31 @@ def _fit_punkt(n):
     start_freq = _frequenz[index_max]
     start_amp = amplitude[index_max]
     start_off = amplitude[0]  # Erster betrachteter Wert ist bereits eine gute Näherung für den Untergrund
+    fmin = _par.fmin
+    fmax = _par.fmax
+
+    phase_bereich = _bereich(_phase_voll[n])
+    if _par.f0_phase:
+        try:  # Nach Möglichkeit die Peakposition in der Phase finden und festlegen
+            s1 = phase_bereich.size
+            s2 = s1 / 100
+            summe_max = -1.0
+            for a in range(0, s1-s2, s2):
+                svgl = abs(numpy.sum(phase_bereich[a:a+s2]))
+                if svgl > summe_max:
+                    summe_max = svgl
+                    start_freq = _frequenz[a+s2/2]
+                    fmin = _frequenz[a-3*s2]
+                    fmax = _frequenz[a+4*s2]
+        except Exception:
+            pass
+
+    if fmin == fmax:
+        fmax = fmin + _par.df
 
     # Fitparameter für die Fitfunktion
     par_amp = Parameters()
-    par_amp.add('resfreq', value=start_freq, min=_par.fmin, max=_par.fmax)
+    par_amp.add('resfreq', value=start_freq, min=fmin, max=fmax)
     par_amp.add('amp', value=start_amp, min=_par.amp_min, max=_par.amp_max)
     par_amp.add(
         'guete',
@@ -171,6 +216,13 @@ def _fit_punkt(n):
         params=par_amp,
         fit_kws=_fit_genauigkeit
     )
+
+    # Fits mit wesentlich zu großen Fehlern aussortieren:
+    if amp.params['amp'].stderr > _par.amp_max or \
+            amp.params['resfreq'] > _par.fmax or \
+            amp.params['resfreq'] < _par.fmin:
+        amp.params['amp'].value = 0.
+        amp.params['resfreq'].value = (_par.fmin + _par.fmax) / 2
 
     _puls(n)
     # Wenn keine Phase gefittet werden soll:
@@ -208,7 +260,7 @@ def _fit_punkt(n):
     # Phase beschneiden
     index_von = index_freq(_par, von)
     index_bis = index_freq(_par, bis)
-    wahl_phase = _bereich(_phase_voll[n])[index_von:index_bis]
+    wahl_phase = _umbrechen(phase_bereich[index_von:index_bis])
 
     if _mod_ph is GLAETTEN:  # Nur glätten:
         phase = savgol_filter(wahl_phase, 15, 3)  # TODO wählbar
@@ -220,7 +272,7 @@ def _fit_punkt(n):
             guete_amp=amp.params['guete'].value,
             guete_amp_fhlr=amp.params['guete'].stderr,
             untergrund=amp.best_values['untergrund'],
-            phase=randwert(phase, _par.phase_versatz)
+            phase=_randwert(phase, _par.phase_versatz)
         )
 
     else:
@@ -246,14 +298,21 @@ def _fit_punkt(n):
             guete_amp=amp.params['guete'].value,
             guete_amp_fhlr=amp.params['guete'].stderr,
             untergrund=amp.best_values['untergrund'],
-            phase=randwert(ph.best_fit, _par.phase_versatz),
+            phase=_randwert(ph.best_fit, _par.phase_versatz),
             guete_ph=ph.best_values['guete'],
             phase_rel=ph.best_values['rel'],
             phase_fhlr=ph.params['resfreq'].stderr
         )
 
 
-def randwert(phase, versatz):
+def _umbrechen(phase):
+    if _par.phase_referenz != 0:
+        return numpy.fmod(phase + 450 + _par.phase_referenz, 180) - 90
+    else:
+        return phase
+
+
+def _randwert(phase, versatz):
     """
     :type phase: numpy.multiarray.ndarray
     :type versatz: int
